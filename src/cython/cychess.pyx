@@ -55,6 +55,24 @@ cdef inline uint64_t sq_to_bit(int sq) nogil:
 
 cpdef uint64_t py_sq_to_bit(int sq): return sq_to_bit(sq)
 
+cpdef str square_to_alg(int sq):
+    """0-63 → 'a1' alg notation."""
+    if sq < 0 or sq >= 64:
+        return "??"
+    cdef int file = sq % 8
+    cdef int rank = sq // 8
+    return chr(ord('a') + file) + chr(ord('1') + rank)
+
+cpdef int alg_to_square(str alg):
+    """'a1' → 0-63 sq, or -1 invalid."""
+    if len(alg) != 2:
+        return -1
+    cdef int file = ord(alg[0]) - ord('a')
+    cdef int rank = ord(alg[1]) - ord('1')
+    if 0 <= file <= 7 and 0 <= rank <= 7:
+        return rank * 8 + file
+    return -1
+
 cdef struct Move:
     uint8_t fr_sq   # from square (0-63)
     uint8_t to_sq   # to square (0-63)
@@ -406,7 +424,6 @@ cdef class Board:
         cdef uint64_t queens_bb = self.pieces[PIECE_WQ - 1 if is_white else PIECE_BQ - 1]
         self._generate_queen_moves(queens_bb, own_occ, opp_occ)
 
-        # TODO: sliders (rooks/bishops/queens), castling, EP, promotions
         return self.move_count
 
     cpdef int generate_moves(self):
@@ -419,3 +436,67 @@ cdef class Board:
         for i in range(self.move_count):
             result.append((self.moves[i].fr_sq, self.moves[i].to_sq))
         return result
+
+    cdef void _set_piece(self, int sq, uint8_t piece_type) nogil:
+        if sq < 0 or sq >= 64:
+            return
+        cdef uint64_t bit = sq_to_bit(sq)
+        cdef int i
+        # Clear sq from EVERYTHING
+        for i in range(12):
+            self.pieces[i] &= ~bit
+        self.occupancy[0] &= ~bit
+        self.occupancy[1] &= ~bit
+        self.occupancy[2] &= ~bit
+        # Set new
+        if piece_type != PIECE_NONE:
+            self.pieces[piece_type - 1] |= bit
+            if piece_type <= 6:  # White
+                self.occupancy[0] |= bit
+            else:  # Black
+                self.occupancy[1] |= bit
+            self.occupancy[2] |= bit
+
+    cpdef set_piece(self, int sq, uint8_t piece_type):
+        return self._set_piece(sq, piece_type)
+
+    cdef bint _make_move(self, int fr_sq, int to_sq) nogil:
+        if fr_sq < 0 or fr_sq >= 64 or to_sq < 0 or to_sq >= 64:
+            return False
+        cdef uint64_t fr_bit = sq_to_bit(fr_sq)
+        cdef uint64_t to_bit = sq_to_bit(to_sq)
+        # Find mover piece_type
+        cdef uint8_t mover = PIECE_NONE
+        cdef int i
+        for i in range(12):
+            if (self.pieces[i] & fr_bit) != 0:
+                mover = <uint8_t>(i + 1)
+                break
+        if mover == PIECE_NONE:
+            return False
+        # Clear fr
+        self.pieces[mover - 1] &= ~fr_bit
+        cdef uint8_t mover_side = 0 if mover <= 6 else 1
+        self.occupancy[mover_side] &= ~fr_bit
+        self.occupancy[2] &= ~fr_bit
+        # Cap: clear any at to
+        for i in range(12):
+            if (self.pieces[i] & to_bit) != 0:
+                self.pieces[i] &= ~to_bit
+                self.occupancy[2] &= ~to_bit  # Cap removes from all
+                break
+        # Place mover at to
+        self.pieces[mover - 1] |= to_bit
+        self.occupancy[mover_side] |= to_bit
+        self.occupancy[2] |= to_bit
+        # State updates (basic)
+        self.white_to_move = not self.white_to_move
+        self.halfmove += 1
+        if not self.white_to_move:
+            self.fullmove += 1
+        self.ep_square = -1  # Reset EP simplistic
+        # ToDo: castle/ep/promo/occ update
+        return True
+
+    cpdef bint make_move(self, int fr_sq, int to_sq):
+        return self._make_move(fr_sq, to_sq)
