@@ -77,18 +77,35 @@ cdef struct Move:
     uint8_t fr_sq   # from square (0-63)
     uint8_t to_sq   # to square (0-63)
 
+cdef struct UndoState:
+    uint8_t fr_sq
+    uint8_t to_sq
+    uint8_t mover_type
+    uint8_t cap_type
+    uint8_t castling
+    int8_t ep_square
+    uint16_t halfmove
+    uint16_t fullmove
+
 cdef class Board:
+    # Board state
     cdef uint64_t pieces[12]        # 12 bitboards
     cdef uint64_t occupancy[3]      # 0=white, 1=black, 2=all
     cdef bint white_to_move
     cdef uint8_t castling
     cdef int8_t ep_square
     cdef uint16_t halfmove, fullmove
+
+    # Moves state
     cdef Move moves[256]     # Fixed buffer for pseudo-legal moves (plenty for chess max ~218)
     cdef int move_count
 
+    cdef UndoState undo_stack[1024]
+    cdef int undo_index  # In __cinit__: self.undo_index = 0
+
     def __cinit__(self):
         self._clear()
+        self.undo_index = 0
 
     cdef void _clear(self) nogil:
         cdef int i
@@ -463,30 +480,56 @@ cdef class Board:
     cdef bint _make_move(self, int fr_sq, int to_sq) nogil:
         if fr_sq < 0 or fr_sq >= 64 or to_sq < 0 or to_sq >= 64:
             return False
+        if self.undo_index >= 1024:
+            return False  # Stack overflow guard
         cdef uint64_t fr_bit = sq_to_bit(fr_sq)
         cdef uint64_t to_bit = sq_to_bit(to_sq)
+
         # Find mover piece_type
-        cdef uint8_t mover = PIECE_NONE
+        cdef uint8_t mover_type = PIECE_NONE
         cdef int i
         for i in range(12):
             if (self.pieces[i] & fr_bit) != 0:
-                mover = <uint8_t>(i + 1)
+                mover_type = <uint8_t>(i + 1)
                 break
-        if mover == PIECE_NONE:
+        if mover_type == PIECE_NONE:
             return False
-        # Clear fr
-        self.pieces[mover - 1] &= ~fr_bit
-        cdef uint8_t mover_side = 0 if mover <= 6 else 1
-        self.occupancy[mover_side] &= ~fr_bit
-        self.occupancy[2] &= ~fr_bit
-        # Cap: clear any at to
+
+        # Detect cap_type (if any at to)
+        cdef uint8_t cap_type = PIECE_NONE
         for i in range(12):
             if (self.pieces[i] & to_bit) != 0:
-                self.pieces[i] &= ~to_bit
-                self.occupancy[2] &= ~to_bit  # Cap removes from all
+                cap_type = <uint8_t>(i + 1)
                 break
+
+        # Record undo state (current values)
+        cdef UndoState *undo = &self.undo_stack[self.undo_index]
+        undo.fr_sq = <uint8_t>fr_sq
+        undo.to_sq = <uint8_t>to_sq
+        undo.mover_type = mover_type
+        undo.cap_type = cap_type
+        undo.castling = self.castling
+        undo.ep_square = self.ep_square
+        undo.halfmove = self.halfmove
+        undo.fullmove = self.fullmove
+        self.undo_index += 1
+
+        # Clear fr
+        self.pieces[mover_type - 1] &= ~fr_bit
+
+        cdef uint8_t mover_side = 0 if mover_type <= 6 else 1
+        self.occupancy[mover_side] &= ~fr_bit
+        self.occupancy[2] &= ~fr_bit
+
+        cdef uint8_t cap_side
+        if cap_type != PIECE_NONE:
+            self.pieces[cap_type - 1] &= ~to_bit  # Clear cap
+            cap_side = 0 if cap_type <= 6 else 1
+            self.occupancy[cap_side] &= ~to_bit
+        self.occupancy[2] &= ~to_bit  # Always clear all-occ at to (even if empty)
+
         # Place mover at to
-        self.pieces[mover - 1] |= to_bit
+        self.pieces[mover_type - 1] |= to_bit
         self.occupancy[mover_side] |= to_bit
         self.occupancy[2] |= to_bit
         # State updates (basic)
@@ -496,7 +539,69 @@ cdef class Board:
             self.fullmove += 1
         self.ep_square = -1  # Reset EP simplistic
         # ToDo: castle/ep/promo/occ update
+
+        self._update_occupancy()
+
         return True
 
     cpdef bint make_move(self, int fr_sq, int to_sq):
         return self._make_move(fr_sq, to_sq)
+
+    cdef void _undo_move(self) nogil:
+        if self.undo_index <= 0:
+            return
+        self.undo_index -= 1
+        cdef UndoState undo = self.undo_stack[self.undo_index]
+
+        cdef uint64_t fr_bit = sq_to_bit(undo.fr_sq)
+        cdef uint64_t to_bit = sq_to_bit(undo.to_sq)
+
+        # Clear to (remove mover)
+        self.pieces[undo.mover_type - 1] &= ~to_bit
+        cdef uint8_t mover_side = 0 if undo.mover_type <= 6 else 1
+        self.occupancy[mover_side] &= ~to_bit
+        self.occupancy[2] &= ~to_bit
+
+        # Restore cap at to (if any)
+        cdef uint8_t cap_side
+        if undo.cap_type != PIECE_NONE:
+            self.pieces[undo.cap_type - 1] |= to_bit
+            cap_side = 0 if undo.cap_type <= 6 else 1
+            self.occupancy[cap_side] |= to_bit
+            self.occupancy[2] |= to_bit
+
+        # Restore mover at fr
+        self.pieces[undo.mover_type - 1] |= fr_bit
+        self.occupancy[mover_side] |= fr_bit
+        self.occupancy[2] |= fr_bit
+
+        # Restore state
+        self.castling = undo.castling
+        self.ep_square = undo.ep_square
+        self.halfmove = undo.halfmove
+        self.fullmove = undo.fullmove
+        self.white_to_move = not self.white_to_move  # Flip back
+
+        self._update_occupancy()
+
+    cpdef void undo_move(self):
+        self._undo_move()
+
+    cpdef long long perft(self, int depth):
+        if depth == 0:
+            return 1
+
+        self.generate_pseudo_legal_moves()
+        cdef int num_moves = self.move_count  # Snapshot
+        cdef Move local_moves[256]  # Local copy (C struct copy fast)
+        cdef int j
+        for j in range(num_moves):
+            local_moves[j] = self.moves[j]  # Copy array (~20-200 copies/ply, negligible)
+
+        cdef long long nodes = 0
+        cdef int i
+        for i in range(num_moves):
+            if self._make_move(local_moves[i].fr_sq, local_moves[i].to_sq):
+                nodes += self.perft(depth - 1)
+                self._undo_move()
+        return nodes
