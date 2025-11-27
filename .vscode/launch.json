@@ -1,11 +1,23 @@
 {
     "version": "0.2.0",
     "configurations": [
+        
         {
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
             "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Python: playGame.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/scripts/playGame.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
             "env": {
