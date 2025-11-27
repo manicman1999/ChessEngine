@@ -1,3 +1,4 @@
+import asyncio
 import chess
 import chess.pgn
 from typing import Optional
@@ -7,7 +8,7 @@ from src.engines.random.randomEngine import RandomEngine
 from src.engines.chessEngineBase import ChessEngineBase
 
 
-def run_game(
+async def run_game(
     white_engine: ChessEngineBase,
     black_engine: ChessEngineBase,
     start_fen: Optional[str] = None,
@@ -29,7 +30,7 @@ def run_game(
             engine = black_engine
             color = "Black"
 
-        move = engine.choose_move(board)
+        move = await engine.choose_move(board)
         if move is None:
             break
         print(
@@ -71,11 +72,14 @@ def run_game(
     }
 
 
-if __name__ == "__main__":
-    # Demo: two random engines, max 10 full moves for quick test
+async def main():
     white = RandomEngine()
     black = AttnEngine()
-    result = run_game(white, black)
+    result = await run_game(white, black)
     print(
         f"\nSummary: {result['winner']} ({result['result']}) after {result['fullmoves']} full moves"
     )
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

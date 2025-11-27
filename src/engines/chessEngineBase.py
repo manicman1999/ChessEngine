@@ -9,5 +9,5 @@ class ChessEngineBase:
     def name(self):
         return self.__class__.__name__
 
-    def choose_move(self, board: chess.Board) -> Optional[chess.Move]:
+    async def choose_move(self, board: chess.Board) -> Optional[chess.Move]:
         raise NotImplementedError("Override in subclass")
