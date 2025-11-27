@@ -21,7 +21,7 @@ class AttnEngine(ChessEngineBase):
         self.modelWorker = ModelWorker(self.model)
         self.model.eval()
         # self.model = torch.compile(self.model, mode="reduce-overhead")
-        self.depth = 2
+        self.depth = 4
         self._single_eval_cache = {}
 
     async def choose_move(self, board: chess.Board) -> Optional[chess.Move]:
@@ -107,12 +107,18 @@ class AttnEngine(ChessEngineBase):
         max_score = -inf
         total_evals = 0
         for future in asyncio.as_completed(negamax_tasks):
-            new_evals, score = await future
+            try:
+                new_evals, score = await future
+            except asyncio.CancelledError:
+                continue
 
             total_evals += new_evals
 
             max_score = max(max_score, -score)
             alpha = max(alpha, -score)
             if alpha >= beta:
+                for task in negamax_tasks:
+                    if not task.done():
+                        task.cancel()
                 break
         return total_evals, max_score

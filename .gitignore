@@ -91,3 +91,6 @@ celerybeat-schedule
 .mypy_cache/
 .dmypy.json
 .pyre/
+
+# cython compiled
+*.c

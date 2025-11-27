@@ -4,6 +4,8 @@ from torch import nn
 from torch.profiler import profile, record_function, ProfilerActivity
 from torchinfo import summary
 
+from board_to_tokens import board_to_tokens
+
 PIECE_TYPES = [chess.PAWN, chess.KNIGHT, chess.BISHOP, chess.ROOK, chess.QUEEN, chess.KING]
 NUM_PIECES = 6
 GROUP_SIZE = NUM_PIECES * 2 + 1  # 13: 12 pieces + empty
@@ -11,6 +13,22 @@ VOCAB_SIZE = GROUP_SIZE * 64  # 832
 EMBED_DIM = 32
 
 class AttnModel(nn.Module):
+    def __init__(self, vocab_size=VOCAB_SIZE, embed_dim=EMBED_DIM, ff_dim=128):
+        super().__init__()
+        self.embed = nn.Embedding(vocab_size, embed_dim)
+        
+        self.fc = nn.Sequential(
+            nn.Linear(embed_dim, ff_dim),
+            nn.ReLU(),
+            nn.Linear(ff_dim, 1)
+        )
+    
+    def forward(self, tokens):  # [B, 64] token ids
+        x = self.embed(tokens)  # [B, 64, embed_dim]
+        x = x.mean(dim=1)       # [B, embed_dim], global avg pool over positions
+        return self.fc(x).squeeze(-1)
+
+class TransModel(nn.Module):
     def __init__(self, vocab_size=VOCAB_SIZE, embed_dim=EMBED_DIM, num_heads=4, ff_dim=128):
         super().__init__()
         self.embed = nn.Embedding(vocab_size, embed_dim)  # No padding_idx
@@ -32,19 +50,6 @@ class AttnModel(nn.Module):
         x = self.transformer(x)
         x = self.pool(x.transpose(1,2)).squeeze(-1)
         return self.fc(x).squeeze(-1)
-
-def board_to_tokens(board: chess.Board) -> torch.Tensor:
-    tokens = torch.zeros(64, dtype=torch.long)
-    for sq in range(64):
-        piece = board.piece_at(sq)
-        offset = sq * GROUP_SIZE
-        if piece:
-            pt_idx = PIECE_TYPES.index(piece.piece_type)
-            col_off = NUM_PIECES if piece.color == chess.BLACK else 0
-            tokens[sq] = offset + pt_idx + col_off
-        else:
-            tokens[sq] = offset + 12  # Empty per sq
-    return tokens.unsqueeze(0)
 
 
 if __name__ == "__main__":
@@ -77,3 +82,13 @@ if __name__ == "__main__":
         model(tokens)
     print(f"10000 infs: {(time.time() - start)*1000:.0f} ms total → {1000/(time.time()-start):.0f} FPS")
     print(f"Peak mem: {torch.cuda.max_memory_allocated()/1e6:.1f} MB" if torch.cuda.is_available() else "CPU only")
+
+    board = chess.Board()
+    start = time.time()
+    for _ in range(10000):
+        tokens = board_to_tokens(board.copy())  # Simulate search cloning
+    torch.cuda.synchronize() if torch.cuda.is_available() else None
+    elapsed = time.time() - start
+    print(
+        f"10000 board_to_tokens calls: {elapsed:.3f}s total → {10000/elapsed:.0f} calls/sec"
+    )
