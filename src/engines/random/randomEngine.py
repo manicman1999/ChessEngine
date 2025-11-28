@@ -8,6 +8,9 @@ promo_chars = ['', 'q', 'n', 'b', 'r']
 
 class RandomEngine(ChessEngineBase):
 
+    def __init__(self):
+        random.seed()
+
     def choose_move(self, board: Board) -> Optional[str]:
         legal_moves = board.get_moves_list()
 

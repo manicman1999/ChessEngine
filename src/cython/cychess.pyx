@@ -10,6 +10,7 @@
 # cython: embedsignature=True
 
 from libc.stdint cimport uint64_t, uint8_t, uint16_t, int8_t, int16_t
+from libc.math cimport INFINITY
 import random
 
 # Piece constants (C-level)
