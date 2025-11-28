@@ -180,6 +180,9 @@ cdef class Board:
     cpdef void set_start_position(self):
         self._set_start_position()
 
+    cpdef bool white_move(self):
+        return self.white_to_move
+
     # Python-accessible getters for testing
     cpdef uint64_t get_occupancy(self):
         return self.occupancy[2]
@@ -876,3 +879,30 @@ cdef class Board:
                 nodes += self.perft(depth - 1)
                 self._undo_move()
         return nodes
+
+    cpdef object game_result(self):
+        self.generate_legal_moves()
+        if self.move_count > 0:
+            return None
+        if self._is_in_check():
+            return -1 if self.white_to_move else 1
+        else:
+            return 0
+
+    cpdef Board clone(self):
+        cdef Board new_board = Board.__new__(Board)
+        cdef int i
+        for i in range(12):
+            new_board.pieces[i] = self.pieces[i]
+        new_board.occupancy[0] = self.occupancy[0]
+        new_board.occupancy[1] = self.occupancy[1]
+        new_board.occupancy[2] = self.occupancy[2]
+        new_board.white_to_move = self.white_to_move
+        new_board.castling = self.castling
+        new_board.ep_square = self.ep_square
+        new_board.halfmove = self.halfmove
+        new_board.fullmove = self.fullmove
+        new_board.undo_index = 0
+        new_board.move_count = 0
+        # Caches reset in __cinit__
+        return new_board

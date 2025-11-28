@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
-import chess
+
+from cychess import Board
 
 @dataclass
 class ChessEngineBase:
@@ -9,5 +10,5 @@ class ChessEngineBase:
     def name(self):
         return self.__class__.__name__
 
-    async def choose_move(self, board: chess.Board) -> Optional[chess.Move]:
+    async def choose_move(self, board: Board) -> Optional[str]:
         raise NotImplementedError("Override in subclass")
