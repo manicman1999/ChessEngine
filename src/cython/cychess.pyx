@@ -451,35 +451,49 @@ cdef class Board:
         cdef int probe_sq, delta, rev_delta
         cdef uint8_t att_side = 0 if attacker_white else 1
 
-        # Pawns (rev caps)
+        # Pawns (rev caps + file adj)
         cdef int pawn_rev_west = -PAWN_CAP_WEST[att_side]
         cdef int pawn_rev_east = -PAWN_CAP_EAST[att_side]
+        cdef int sq_file, probe_file
         probe_sq = sq + pawn_rev_west
         if 0 <= probe_sq < 64:
-            probe_bb = sq_to_bit(probe_sq)
-            if probe_bb & self.pieces[PIECE_WP - 1 if attacker_white else PIECE_BP - 1]:
-                return True
+            sq_file = sq % 8
+            probe_file = probe_sq % 8
+            if abs(probe_file - sq_file) == 1:
+                probe_bb = sq_to_bit(probe_sq)
+                if probe_bb & self.pieces[PIECE_WP - 1 if attacker_white else PIECE_BP - 1]:
+                    return True
         probe_sq = sq + pawn_rev_east
         if 0 <= probe_sq < 64:
-            probe_bb = sq_to_bit(probe_sq)
-            if probe_bb & self.pieces[PIECE_WP - 1 if attacker_white else PIECE_BP - 1]:
-                return True
+            sq_file = sq % 8
+            probe_file = probe_sq % 8
+            if abs(probe_file - sq_file) == 1:
+                probe_bb = sq_to_bit(probe_sq)
+                if probe_bb & self.pieces[PIECE_WP - 1 if attacker_white else PIECE_BP - 1]:
+                    return True
 
-        # Knights
+        # Knights (L-shape dx/dy)
+        cdef int dx, dy
         for delta in range(8):
             probe_sq = sq + KNIGHT_DELTAS[delta]
             if 0 <= probe_sq < 64:
-                probe_bb = sq_to_bit(probe_sq)
-                if probe_bb & self.pieces[PIECE_WN - 1 if attacker_white else PIECE_BN - 1]:
-                    return True
+                dx = (probe_sq % 8) - (sq % 8)
+                dy = (probe_sq // 8) - (sq // 8)
+                if (abs(dx) == 1 and abs(dy) == 2) or (abs(dx) == 2 and abs(dy) == 1):
+                    probe_bb = sq_to_bit(probe_sq)
+                    if probe_bb & self.pieces[PIECE_WN - 1 if attacker_white else PIECE_BN - 1]:
+                        return True
 
-        # King
+        # King (adj dx/dy)
         for delta in range(8):
             probe_sq = sq + KING_DELTAS[delta]
             if 0 <= probe_sq < 64:
-                probe_bb = sq_to_bit(probe_sq)
-                if probe_bb & self.pieces[PIECE_WK - 1 if attacker_white else PIECE_BK - 1]:
-                    return True
+                dx = (probe_sq % 8) - (sq % 8)
+                dy = (probe_sq // 8) - (sq // 8)
+                if abs(dx) <= 1 and abs(dy) <= 1 and (dx != 0 or dy != 0):
+                    probe_bb = sq_to_bit(probe_sq)
+                    if probe_bb & self.pieces[PIECE_WK - 1 if attacker_white else PIECE_BK - 1]:
+                        return True
 
         cdef int orig_file = sq % 8
         cdef int orig_rank = sq // 8
