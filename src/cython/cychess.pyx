@@ -27,6 +27,9 @@ cdef uint8_t PROMO_PIECES[2][4]  # side 0=white,1=black; idx 0=Q,1=N,...
 PROMO_PIECES[0][0] = PIECE_WQ; PROMO_PIECES[0][1] = PIECE_WN; PROMO_PIECES[0][2] = PIECE_WB; PROMO_PIECES[0][3] = PIECE_WR
 PROMO_PIECES[1][0] = PIECE_BQ; PROMO_PIECES[1][1] = PIECE_BN; PROMO_PIECES[1][2] = PIECE_BB; PROMO_PIECES[1][3] = PIECE_BR
 
+cdef int8_t PIECE_VALUES[6]
+PIECE_VALUES[:] = [1, 3, 3, 5, 9, 0]
+
 # Knight Deltas
 cdef int KNIGHT_DELTAS[8]
 KNIGHT_DELTAS[:] = [15, 17, 10, 6, -6, -10, -17, -15]
@@ -978,6 +981,32 @@ cdef class Board:
     cpdef int eval_pst(self):
         """Naive PST + material evaluation (centipawns, positive = white advantage)."""
         return self._eval_pst()
+
+    cdef int _material_balance(self) nogil:
+        """White material - black material (pawn=1 units; positive = white adv)."""
+        cdef int white_mat = 0
+        cdef int black_mat = 0
+        cdef int ptype, sq
+        cdef uint64_t bit
+
+        # White
+        for ptype in range(6):
+            for sq in range(64):
+                bit = sq_to_bit(sq)
+                if self.pieces[ptype] & bit:
+                    white_mat += PIECE_VALUES[ptype]
+
+        # Black
+        for ptype in range(6):
+            for sq in range(64):
+                bit = sq_to_bit(sq)
+                if self.pieces[ptype + 6] & bit:
+                    black_mat += PIECE_VALUES[ptype]
+
+        return white_mat - black_mat
+
+    cpdef int material_balance(self):
+        return self._material_balance()
 
     cpdef long long perft(self, int depth):
         if depth == 0:

@@ -17,6 +17,9 @@ class PstEngine(ChessEngineBase):
 
     def choose_move(self, board: Board) -> Optional[str]:
         legal_moves = board.get_moves_list()
+        legal_move_strs = [f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}" for move in legal_moves]
+
+        start_score = self.eval_board(board)
 
         start_time = time.time()
 
@@ -28,6 +31,7 @@ class PstEngine(ChessEngineBase):
 
         best_move = None
         best_score = -inf
+        best_move_str = ""
         total_evals = 0
         for move, (new_evals, score) in zip(legal_moves, results):
             total_evals += new_evals
@@ -35,12 +39,13 @@ class PstEngine(ChessEngineBase):
             if -score > best_score:
                 best_score = -score
                 best_move = move
+                best_move_str = f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}"
 
         total_time = time.time() - start_time
         print(f"{total_evals} evals in {total_time:.4f}s.")
 
-        if best_move:
-            return f"{square_to_alg(best_move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}"
+        if best_move and best_move_str:
+            return best_move_str
 
     def eval_board(self, board: Board) -> int:
         if (result := board.game_result()) is not None:

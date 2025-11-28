@@ -64,7 +64,8 @@ async def run_game(
             break
 
         moves_history.append(move_str)
-        print(f"{color} ({engine.name}): {move_str} ({len(moves_history) // 2 - 1})")
+        mat_bal = board.material_balance()
+        print(f"{color} ({engine.name}): {move_str} ({len(moves_history) // 2 - 1}) (Mat Balance: {mat_bal})")
 
     if result is None:
         result_str = "1/2-1/2"
@@ -106,6 +107,10 @@ async def main():
     white = RandomEngine()
     black = PstEngine()
     result = await run_game(white, black)
+
+    print()
+    print(result['pgn'])
+    print()
     print(
         f"\nSummary: {result['winner']} ({result['result']}) after {result['fullmoves']} full moves"
     )
