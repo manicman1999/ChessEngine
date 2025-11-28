@@ -21,6 +21,12 @@ cdef public uint8_t PIECE_BQ = 11, PIECE_BK = 12
 # Castling
 cdef uint8_t CASTLE_WK = 1, CASTLE_WQ = 2, CASTLE_BK = 4, CASTLE_BQ = 8
 
+# Promo
+cdef uint8_t PROMO_Q = 1, PROMO_N = 2, PROMO_B = 3, PROMO_R = 4
+cdef uint8_t PROMO_PIECES[2][4]  # side 0=white,1=black; idx 0=Q,1=N,...
+PROMO_PIECES[0][0] = PIECE_WQ; PROMO_PIECES[0][1] = PIECE_WN; PROMO_PIECES[0][2] = PIECE_WB; PROMO_PIECES[0][3] = PIECE_WR
+PROMO_PIECES[1][0] = PIECE_BQ; PROMO_PIECES[1][1] = PIECE_BN; PROMO_PIECES[1][2] = PIECE_BB; PROMO_PIECES[1][3] = PIECE_BR
+
 # Knight Deltas
 cdef int KNIGHT_DELTAS[8]
 KNIGHT_DELTAS[:] = [15, 17, 10, 6, -6, -10, -17, -15]
@@ -73,9 +79,13 @@ cpdef int alg_to_square(str alg):
         return rank * 8 + file
     return -1
 
+cdef inline bint is_promo_rank(int sq, uint8_t side) nogil:
+    return (side == 0 and (sq // 8) == 7) or (side == 1 and (sq // 8) == 0)
+
 cdef struct Move:
-    uint8_t fr_sq   # from square (0-63)
-    uint8_t to_sq   # to square (0-63)
+    uint8_t fr_sq
+    uint8_t to_sq
+    uint8_t promo
 
 cdef struct UndoState:
     uint8_t fr_sq
@@ -83,7 +93,10 @@ cdef struct UndoState:
     uint8_t mover_type
     uint8_t cap_type
     uint8_t castling
+    uint8_t promo
     int8_t ep_square
+    int8_t ep_captured_sq
+    int8_t castle_rook_fr
     uint16_t halfmove
     uint16_t fullmove
 
@@ -168,6 +181,22 @@ cdef class Board:
     cpdef uint64_t get_occupancy(self):
         return self.occupancy[2]
 
+    cdef inline int find_king_sq(self, bint is_white) nogil:
+        cdef uint64_t kings_bb = self.pieces[PIECE_WK - 1 if is_white else PIECE_BK - 1]
+        cdef int sq
+        for sq in range(64):
+            if sq_to_bit(sq) & kings_bb:
+                return sq
+        return -1  # Error state
+
+    cdef inline void add_move(self, int fr, int to, uint8_t promo = 0) nogil:
+        if self.move_count >= 256:
+            return
+        self.moves[self.move_count].fr_sq = <uint8_t>fr
+        self.moves[self.move_count].to_sq = <uint8_t>to
+        self.moves[self.move_count].promo = promo
+        self.move_count += 1
+
     cdef int _generate_knight_moves(self, uint64_t knights_bb, uint64_t own_occ, uint64_t opp_occ) nogil:
         cdef int sq, target, delta
         cdef uint64_t target_bb
@@ -186,96 +215,110 @@ cdef class Board:
                     if ((abs(dx) == 1 and abs(dy) == 2) or (abs(dx) == 2 and abs(dy) == 1)):
                         target_bb = sq_to_bit(target)
                         if (target_bb & own_occ) == 0:
-                            self.moves[self.move_count].fr_sq = <uint8_t>sq
-                            self.moves[self.move_count].to_sq = <uint8_t>target
-                            self.move_count += 1
+                            self.add_move(sq, target)
         return self.move_count
 
     cdef int _generate_pawn_moves(self, uint64_t pawns_bb, uint64_t own_occ, uint64_t opp_occ, uint8_t side) nogil:
-        """Pseudo-legal pawn moves: single/double pushes (quiet), diagonal captures. Fills moves[]."""
-        cdef int sq, target
+        cdef int sq, target, double_target
         cdef uint64_t target_bb
         cdef int push_delta = PAWN_PUSH[side]
         cdef int double_delta = PAWN_DOUBLE[side]
-        cdef bint start_rank
-        cdef int sq_file, tgt_file
+        cdef bint start_rank = False
+        cdef bint attacker_rank_ok, is_promo
+        cdef int p
 
         for sq in range(64):
             if (sq_to_bit(sq) & pawns_bb) == 0:
                 continue
+            start_rank = (side == 0 and (sq // 8) == 1) or (side == 1 and (sq // 8) == 6)
 
-            
-            if self.move_count >= 256:
-                return self.move_count
-
-            start_rank = (side == 0 and (sq // 8 == 1)) or (side == 1 and (sq // 8 == 6))
-
-            # Single push (quiet)
+            # Single push
             target = sq + push_delta
             if 0 <= target < 64:
                 target_bb = sq_to_bit(target)
-                if (target_bb & (own_occ | opp_occ)) == 0:  # Empty
-                    self.moves[self.move_count].fr_sq = sq
-                    self.moves[self.move_count].to_sq = target
-                    self.move_count += 1
+                if (target_bb & (own_occ | opp_occ)) == 0:
+                    is_promo = is_promo_rank(target, side)
+                    if is_promo:
+                        for p in range(4):
+                            self.add_move(sq, target, p + 1)
+                    else:
+                        self.add_move(sq, target, 0)
 
-                    # Double push (from start rank, if single empty)
+                    # Double push
                     if start_rank:
                         double_target = sq + double_delta
-                        double_bb = sq_to_bit(double_target)
-                        if 0 <= double_target < 64 and (double_bb & (own_occ | opp_occ)) == 0:
-                            self.moves[self.move_count].fr_sq = sq
-                            self.moves[self.move_count].to_sq = double_target
-                            self.move_count += 1
+                        if 0 <= double_target < 64:
+                            target_bb = sq_to_bit(double_target)
+                            if (target_bb & (own_occ | opp_occ)) == 0:
+                                self.add_move(sq, double_target, 0)  # Never promo
 
-            # Captures
-            # West cap
+            # West cap / EP
             target = sq + PAWN_CAP_WEST[side]
             if 0 <= target < 64:
                 target_bb = sq_to_bit(target)
-                if (target_bb & opp_occ) != 0:
-                    sq_file = sq & 7
-                    tgt_file = target & 7
-                    if abs(tgt_file - sq_file) == 1:  # Diagonal: adjacent file
-                        self.moves[self.move_count].fr_sq = sq
-                        self.moves[self.move_count].to_sq = target
-                        self.move_count += 1
+                attacker_rank_ok = (side == 0 and (sq // 8) == 4) or (side == 1 and (sq // 8) == 3)
+                if ((target_bb & opp_occ) != 0) or (target == self.ep_square and attacker_rank_ok):
+                    is_promo = is_promo_rank(target, side)
+                    if is_promo:
+                        for p in range(4):
+                            self.add_move(sq, target, p + 1)
+                    else:
+                        self.add_move(sq, target, 0)
 
-            # East cap
+            # East cap / EP
             target = sq + PAWN_CAP_EAST[side]
             if 0 <= target < 64:
                 target_bb = sq_to_bit(target)
-                if (target_bb & opp_occ) != 0:
-                    sq_file = sq & 7
-                    tgt_file = target & 7
-                    if abs(tgt_file - sq_file) == 1:
-                        self.moves[self.move_count].fr_sq = sq
-                        self.moves[self.move_count].to_sq = target
-                        self.move_count += 1
+                attacker_rank_ok = (side == 0 and (sq // 8) == 4) or (side == 1 and (sq // 8) == 3)
+                if ((target_bb & opp_occ) != 0) or (target == self.ep_square and attacker_rank_ok):
+                    is_promo = is_promo_rank(target, side)
+                    if is_promo:
+                        for p in range(4):
+                            self.add_move(sq, target, p + 1)
+                    else:
+                        self.add_move(sq, target, 0)
 
         return self.move_count
 
     cdef int _generate_king_moves(self, uint64_t kings_bb, uint64_t own_occ, uint64_t opp_occ) nogil:
-        cdef int sq, target, delta
-        cdef uint64_t target_bb
-        cdef int dx, dy
+        cdef int sq, target
+        cdef uint64_t target_bb, path_mask
+        cdef bint is_white = self.white_to_move
+        cdef uint8_t side = 0 if is_white else 1
+        cdef int king_sq = -1
 
+        # Find king (single)
         for sq in range(64):
-            if (sq_to_bit(sq) & kings_bb) == 0:
-                continue
-            for delta in range(8):
-                if self.move_count >= 256:
-                    return self.move_count
-                target = sq + KING_DELTAS[delta]
-                if 0 <= target < 64:
-                    dx = (target % 8) - (sq % 8)
-                    dy = (target // 8) - (sq // 8)
-                    if abs(dx) <= 1 and abs(dy) <= 1 and (dx != 0 or dy != 0):
-                        target_bb = sq_to_bit(target)
-                        if (target_bb & own_occ) == 0:
-                            self.moves[self.move_count].fr_sq = <uint8_t>sq
-                            self.moves[self.move_count].to_sq = <uint8_t>target
-                            self.move_count += 1
+            if sq_to_bit(sq) & kings_bb:
+                king_sq = sq
+                break
+
+        # Normal king moves
+        cdef int d
+        for d in range(8):
+            target = king_sq + KING_DELTAS[d]
+            if 0 <= target < 64:
+                target_bb = sq_to_bit(target)
+                if (target_bb & own_occ) == 0:
+                    self.add_move(king_sq, target, 0)
+
+        # Castling (pseudo: rights + path empty)
+        cdef uint8_t rights = self.castling
+        if side == 0:  # White
+            # KS
+            if (rights & CASTLE_WK) and king_sq == 4 and (self.occupancy[2] & (sq_to_bit(5) | sq_to_bit(6))) == 0:
+                self.add_move(4, 6, 0)
+            # QS
+            if (rights & CASTLE_WQ) and king_sq == 4 and (self.occupancy[2] & (sq_to_bit(1) | sq_to_bit(2))) == 0:
+                self.add_move(4, 2, 0)
+        else:  # Black
+            # KS
+            if (rights & CASTLE_BK) and king_sq == 60 and (self.occupancy[2] & (sq_to_bit(61) | sq_to_bit(62))) == 0:
+                self.add_move(60, 62, 0)
+            # QS
+            if (rights & CASTLE_BQ) and king_sq == 60 and (self.occupancy[2] & (sq_to_bit(58) | sq_to_bit(59))) == 0:
+                self.add_move(60, 58, 0)
+
         return self.move_count
 
     cdef int _generate_rook_moves(self, uint64_t rooks_bb, uint64_t own_occ, uint64_t opp_occ) nogil:
@@ -311,14 +354,10 @@ cdef class Board:
                     target_bb = sq_to_bit(target)
                     if (target_bb & blockers) != 0:
                         if (target_bb & opp_occ) != 0:
-                            self.moves[self.move_count].fr_sq = <uint8_t>sq
-                            self.moves[self.move_count].to_sq = <uint8_t>target
-                            self.move_count += 1
+                            self.add_move(sq, target)
                         break
                     else:
-                        self.moves[self.move_count].fr_sq = <uint8_t>sq
-                        self.moves[self.move_count].to_sq = <uint8_t>target
-                        self.move_count += 1
+                        self.add_move(sq, target)
                     target += dir_delta
         return self.move_count
 
@@ -355,14 +394,10 @@ cdef class Board:
                     target_bb = sq_to_bit(target)
                     if (target_bb & blockers) != 0:
                         if (target_bb & opp_occ) != 0:
-                            self.moves[self.move_count].fr_sq = <uint8_t>sq
-                            self.moves[self.move_count].to_sq = <uint8_t>target
-                            self.move_count += 1
+                            self.add_move(sq, target)
                         break
                     else:
-                        self.moves[self.move_count].fr_sq = <uint8_t>sq
-                        self.moves[self.move_count].to_sq = <uint8_t>target
-                        self.move_count += 1
+                        self.add_move(sq, target)
                     target += dir_delta
         return self.move_count
 
@@ -399,16 +434,28 @@ cdef class Board:
                     target_bb = sq_to_bit(target)
                     if (target_bb & blockers) != 0:
                         if (target_bb & opp_occ) != 0:
-                            self.moves[self.move_count].fr_sq = <uint8_t>sq
-                            self.moves[self.move_count].to_sq = <uint8_t>target
-                            self.move_count += 1
+                            self.add_move(sq, target)
                         break
                     else:
-                        self.moves[self.move_count].fr_sq = <uint8_t>sq
-                        self.moves[self.move_count].to_sq = <uint8_t>target
-                        self.move_count += 1
+                        self.add_move(sq, target)
                     target += dir_delta
         return self.move_count
+
+    cdef bint _is_in_check(self) nogil:
+        cdef bint defender_white = self.white_to_move
+        cdef int ksq = self.find_king_sq(defender_white)
+        cdef bint attacker_white = not defender_white
+        cdef bint saved_wtm = self.white_to_move
+        self.white_to_move = attacker_white
+        self.generate_pseudo_legal_moves()
+        cdef bint attacked = False
+        cdef int i
+        for i in range(self.move_count):
+            if self.moves[i].to_sq == ksq:
+                attacked = True
+                break
+        self.white_to_move = saved_wtm
+        return attacked
 
     cdef int generate_pseudo_legal_moves(self) nogil:
         self.move_count = 0
@@ -443,15 +490,31 @@ cdef class Board:
 
         return self.move_count
 
+    cdef int generate_legal_moves(self) nogil:
+        cdef int pseudo_count = self.generate_pseudo_legal_moves()
+        cdef Move temp_moves[256]
+        cdef int legal_count = 0
+        cdef int i
+        for i in range(pseudo_count):
+            temp_moves[i] = self.moves[i]
+        for i in range(pseudo_count):
+            if self._make_move(temp_moves[i].fr_sq, temp_moves[i].to_sq, temp_moves[i].promo):
+                if not self._is_in_check():
+                    self.moves[legal_count] = temp_moves[i]
+                    legal_count += 1
+                self._undo_move()
+        self.move_count = legal_count
+        return legal_count
+
     cpdef int generate_moves(self):
-        return self.generate_pseudo_legal_moves()
+        return self.generate_legal_moves()
 
     cpdef list get_moves_list(self):
-        self.generate_pseudo_legal_moves()
+        self.generate_legal_moves()
         cdef list result = []
         cdef int i
         for i in range(self.move_count):
-            result.append((self.moves[i].fr_sq, self.moves[i].to_sq))
+            result.append((self.moves[i].fr_sq, self.moves[i].to_sq, self.moves[i].promo))
         return result
 
     cdef void _set_piece(self, int sq, uint8_t piece_type) nogil:
@@ -477,75 +540,155 @@ cdef class Board:
     cpdef set_piece(self, int sq, uint8_t piece_type):
         return self._set_piece(sq, piece_type)
 
-    cdef bint _make_move(self, int fr_sq, int to_sq) nogil:
+    cdef bint _make_move(self, uint8_t fr_sq_, uint8_t to_sq_, uint8_t promo_) nogil:
+        cdef int fr_sq = fr_sq_, to_sq = to_sq_, promo = promo_
         if fr_sq < 0 or fr_sq >= 64 or to_sq < 0 or to_sq >= 64:
             return False
         if self.undo_index >= 1024:
-            return False  # Stack overflow guard
+            return False
+
         cdef uint64_t fr_bit = sq_to_bit(fr_sq)
         cdef uint64_t to_bit = sq_to_bit(to_sq)
 
-        # Find mover piece_type
+        # Mover/cap types
         cdef uint8_t mover_type = PIECE_NONE
         cdef int i
         for i in range(12):
-            if (self.pieces[i] & fr_bit) != 0:
+            if (self.pieces[i] & fr_bit):
                 mover_type = <uint8_t>(i + 1)
                 break
         if mover_type == PIECE_NONE:
             return False
 
-        # Detect cap_type (if any at to)
         cdef uint8_t cap_type = PIECE_NONE
         for i in range(12):
-            if (self.pieces[i] & to_bit) != 0:
+            if (self.pieces[i] & to_bit):
                 cap_type = <uint8_t>(i + 1)
                 break
 
-        # Record undo state (current values)
+        cdef uint8_t mover_side = 0 if mover_type <= 6 else 1
+
+        # Detect specials BEFORE changes
+        cdef int8_t ep_captured_sq = -1
+        cdef int8_t castle_rook_fr = -1
+        cdef bint is_castle = False
+        cdef bint is_ks = False
+        if mover_type == PIECE_WP or mover_type == PIECE_BP:
+            if self.ep_square == to_sq:
+                ep_captured_sq = to_sq + (-8 if self.white_to_move else 8)
+                if 0 <= ep_captured_sq < 64:
+                    # Assume valid (gen ensures opp pawn there)
+                    pass
+        elif mover_type == PIECE_WK or mover_type == PIECE_BK:
+            if abs(fr_sq - to_sq) == 2 and (fr_sq // 8) == (to_sq // 8):
+                is_castle = True
+                is_ks = to_sq > fr_sq
+                if mover_side == 0:
+                    castle_rook_fr = 7 if is_ks else 0
+                else:
+                    castle_rook_fr = 63 if is_ks else 56
+
+        # Record undo (pre-change)
         cdef UndoState *undo = &self.undo_stack[self.undo_index]
-        undo.fr_sq = <uint8_t>fr_sq
-        undo.to_sq = <uint8_t>to_sq
+        undo.fr_sq = fr_sq_
+        undo.to_sq = to_sq_
         undo.mover_type = mover_type
         undo.cap_type = cap_type
+        undo.promo = promo
         undo.castling = self.castling
         undo.ep_square = self.ep_square
+        undo.ep_captured_sq = ep_captured_sq
+        undo.castle_rook_fr = castle_rook_fr
         undo.halfmove = self.halfmove
         undo.fullmove = self.fullmove
         self.undo_index += 1
 
         # Clear fr
         self.pieces[mover_type - 1] &= ~fr_bit
-
-        cdef uint8_t mover_side = 0 if mover_type <= 6 else 1
         self.occupancy[mover_side] &= ~fr_bit
         self.occupancy[2] &= ~fr_bit
 
+        # Clear to cap (if any)
         cdef uint8_t cap_side
         if cap_type != PIECE_NONE:
-            self.pieces[cap_type - 1] &= ~to_bit  # Clear cap
+            self.pieces[cap_type - 1] &= ~to_bit
             cap_side = 0 if cap_type <= 6 else 1
             self.occupancy[cap_side] &= ~to_bit
-        self.occupancy[2] &= ~to_bit  # Always clear all-occ at to (even if empty)
+            self.occupancy[2] &= ~to_bit
 
-        # Place mover at to
+        # EP extra clear (empty to already)
+        cdef uint64_t ep_bit
+        cdef uint8_t ep_cap_type
+        cdef uint8_t ep_side
+        if ep_captured_sq != -1:
+            ep_bit = sq_to_bit(ep_captured_sq)
+            ep_cap_type = PIECE_BP if self.white_to_move else PIECE_WP
+            self.pieces[ep_cap_type - 1] &= ~ep_bit
+            ep_side = 1 - mover_side
+            self.occupancy[ep_side] &= ~ep_bit
+            self.occupancy[2] &= ~ep_bit
+
+        # Castle rook move
+        cdef int rook_to
+        cdef uint64_t rfr_bit, rto_bit
+        cdef uint8_t rook_type
+        if castle_rook_fr != -1:
+            rook_to = to_sq - (1 if to_sq > fr_sq else -1)
+            rfr_bit = sq_to_bit(castle_rook_fr)
+            rto_bit = sq_to_bit(rook_to)
+            rook_type = PIECE_WR if mover_side == 0 else PIECE_BR
+            self.pieces[rook_type - 1] &= ~rfr_bit
+            self.occupancy[mover_side] &= ~rfr_bit
+            self.occupancy[2] &= ~rfr_bit
+            self.pieces[rook_type - 1] |= rto_bit
+            self.occupancy[mover_side] |= rto_bit
+            self.occupancy[2] |= rto_bit
+
+        # Place (pawn) at to
         self.pieces[mover_type - 1] |= to_bit
         self.occupancy[mover_side] |= to_bit
         self.occupancy[2] |= to_bit
-        # State updates (basic)
+
+        # Promo override
+        cdef uint8_t new_type
+        if promo != 0:
+            new_type = PROMO_PIECES[mover_side][promo - 1]
+            self._set_piece(to_sq, new_type)
+
+        # State updates
         self.white_to_move = not self.white_to_move
-        self.halfmove += 1
+
+        # Halfmove (reset on pawn/cap)
+        if mover_type == PIECE_WP or mover_type == PIECE_BP or cap_type != PIECE_NONE:
+            self.halfmove = 0
+        else:
+            self.halfmove += 1
+
+        # Fullmove
         if not self.white_to_move:
             self.fullmove += 1
-        self.ep_square = -1  # Reset EP simplistic
-        # ToDo: castle/ep/promo/occ update
+
+        # EP (double push only)
+        self.ep_square = -1
+        if (mover_type == PIECE_WP or mover_type == PIECE_BP) and abs(to_sq - fr_sq) == 16:
+            self.ep_square = fr_sq + PAWN_PUSH[mover_side]
+
+        # Castling rights (recompute from positions)
+        self.castling = 0
+        if (self.pieces[PIECE_WK - 1] & sq_to_bit(4)) and (self.pieces[PIECE_WR - 1] & sq_to_bit(7)):
+            self.castling |= CASTLE_WK
+        if (self.pieces[PIECE_WK - 1] & sq_to_bit(4)) and (self.pieces[PIECE_WR - 1] & sq_to_bit(0)):
+            self.castling |= CASTLE_WQ
+        if (self.pieces[PIECE_BK - 1] & sq_to_bit(60)) and (self.pieces[PIECE_BR - 1] & sq_to_bit(63)):
+            self.castling |= CASTLE_BK
+        if (self.pieces[PIECE_BK - 1] & sq_to_bit(60)) and (self.pieces[PIECE_BR - 1] & sq_to_bit(56)):
+            self.castling |= CASTLE_BQ
 
         self._update_occupancy()
-
         return True
 
-    cpdef bint make_move(self, int fr_sq, int to_sq):
-        return self._make_move(fr_sq, to_sq)
+    cpdef bint make_move(self, int fr_sq, int to_sq, uint8_t promo=0):
+        return self._make_move(<uint8_t>fr_sq, <uint8_t>to_sq, promo)
 
     cdef void _undo_move(self) nogil:
         if self.undo_index <= 0:
@@ -556,19 +699,58 @@ cdef class Board:
         cdef uint64_t fr_bit = sq_to_bit(undo.fr_sq)
         cdef uint64_t to_bit = sq_to_bit(undo.to_sq)
 
-        # Clear to (remove mover)
-        self.pieces[undo.mover_type - 1] &= ~to_bit
         cdef uint8_t mover_side = 0 if undo.mover_type <= 6 else 1
+
+        # Clear to
+        self.pieces[undo.mover_type - 1] &= ~to_bit  # Undo promo/mover
         self.occupancy[mover_side] &= ~to_bit
         self.occupancy[2] &= ~to_bit
 
-        # Restore cap at to (if any)
+        # Restore cap at to
         cdef uint8_t cap_side
         if undo.cap_type != PIECE_NONE:
             self.pieces[undo.cap_type - 1] |= to_bit
             cap_side = 0 if undo.cap_type <= 6 else 1
             self.occupancy[cap_side] |= to_bit
             self.occupancy[2] |= to_bit
+
+        # Restore EP captured
+        cdef uint64_t ep_bit
+        cdef uint8_t ep_cap_type
+        cdef uint8_t ep_side
+        if undo.ep_captured_sq != -1:
+            ep_bit = sq_to_bit(undo.ep_captured_sq)
+            ep_cap_type = (PIECE_BP if undo.mover_type <= 6 else PIECE_WP)
+            self.pieces[ep_cap_type - 1] |= ep_bit
+            ep_side = 1 - mover_side
+            self.occupancy[ep_side] |= ep_bit
+            self.occupancy[2] |= ep_bit
+
+        # Restore castle rook
+        cdef bint is_ks
+        cdef int rook_to
+        cdef uint64_t rfr_bit, rto_bit
+        cdef uint8_t rook_type
+        if undo.castle_rook_fr != -1:
+            is_ks = undo.to_sq > undo.fr_sq
+            rook_to = undo.to_sq - (1 if is_ks else -1)
+            rfr_bit = sq_to_bit(undo.castle_rook_fr)
+            rto_bit = sq_to_bit(rook_to)
+            if undo.mover_type == PIECE_WK:
+                rook_type = PIECE_WR
+            elif undo.mover_type == PIECE_BK:
+                rook_type = PIECE_BK
+            else:
+                rook_type = 0
+
+            # Clear rook_to
+            self.pieces[rook_type - 1] &= ~rto_bit
+            self.occupancy[mover_side] &= ~rto_bit
+            self.occupancy[2] &= ~rto_bit
+            # Place at rook_fr
+            self.pieces[rook_type - 1] |= rfr_bit
+            self.occupancy[mover_side] |= rfr_bit
+            self.occupancy[2] |= rfr_bit
 
         # Restore mover at fr
         self.pieces[undo.mover_type - 1] |= fr_bit
@@ -580,7 +762,7 @@ cdef class Board:
         self.ep_square = undo.ep_square
         self.halfmove = undo.halfmove
         self.fullmove = undo.fullmove
-        self.white_to_move = not self.white_to_move  # Flip back
+        self.white_to_move = not self.white_to_move
 
         self._update_occupancy()
 
@@ -601,7 +783,7 @@ cdef class Board:
         cdef long long nodes = 0
         cdef int i
         for i in range(num_moves):
-            if self._make_move(local_moves[i].fr_sq, local_moves[i].to_sq):
+            if self._make_move(local_moves[i].fr_sq, local_moves[i].to_sq, local_moves[i].promo):
                 nodes += self.perft(depth - 1)
                 self._undo_move()
         return nodes
