@@ -9,7 +9,7 @@
 # cython: overflowcheck=False
 # cython: embedsignature=True
 
-from libc.stdint cimport uint64_t, uint8_t, uint16_t, int8_t
+from libc.stdint cimport uint64_t, uint8_t, uint16_t, int8_t, int16_t
 
 # Piece constants (C-level)
 cdef public uint8_t PIECE_NONE = 0
@@ -54,6 +54,90 @@ BISHOP_DIRECTIONS[:] = [9, 7, -7, -9]  # NE NW SW SE
 
 cdef int QUEEN_DIRECTIONS[8]
 QUEEN_DIRECTIONS[:] = [8, -8, 1, -1, 9, 7, -7, -9]  # Rook + Bishop
+
+# Flip Squares
+cdef inline int flip_sq(int sq) nogil:
+    """Mirror square vertically for black PST lookup: a1<->a8, etc."""
+    return ((sq & 7) | ((7 - (sq >> 3)) << 3))
+
+# PeSTO midgame PST tables (positional deltas, sq 0=a1 to 63=h8)
+cdef int16_t MG_PAWN[64]
+MG_PAWN[:] = [
+    0, 0, 0, 0, 0, 0, 0, 0,
+    -35, -1, -20, -23, -15, 24, 38, -22,
+    -26, -4, -4, -10, 3, 3, 33, -12,
+    -27, -2, -5, 12, 17, 6, 10, -25,
+    -14, 13, 6, 21, 23, 12, 17, -23,
+    -6, 7, 26, 31, 65, 56, 25, -20,
+    98, 134, 61, 95, 68, 126, 34, -11,
+    0, 0, 0, 0, 0, 0, 0, 0
+]
+cdef int16_t MG_KNIGHT[64]
+MG_KNIGHT[:] = [
+    -105, -21, -58, -33, -17, -28, -19, -23,
+    -29, -53, -12, -3, -1, 18, -14, -19,
+    -23, -9, 12, 10, 19, 17, 25, -16,
+    -13, 4, 16, 13, 28, 19, 21, -8,
+    -9, 17, 19, 53, 37, 69, 18, 22,
+    -47, 60, 37, 65, 84, 129, 73, 44,
+    -73, -41, 72, 36, 23, 62, 7, -17,
+    -167, -89, -34, -49, 61, -97, -15, -107
+]
+cdef int16_t MG_BISHOP[64]
+MG_BISHOP[:] = [
+    -33, -3, -14, -21, -13, -12, -39, -21,
+    4, 15, 16, 0, 7, 21, 33, 1,
+    0, 15, 15, 15, 14, 27, 18, 10,
+    -6, 13, 13, 26, 34, 12, 10, 4,
+    -4, 5, 19, 50, 37, 37, 7, -2,
+    -16, 37, 43, 40, 35, 50, 37, -2,
+    -26, 16, -18, -13, 30, 59, 18, -47,
+    -29, 4, -82, -37, -25, -42, 7, -8
+]
+cdef int16_t MG_ROOK[64]
+MG_ROOK[:] = [
+    -19, -13, 1, 17, 16, 7, -37, -26,
+    -44, -16, -20, -9, -1, 11, -6, -71,
+    -45, -25, -16, -17, 3, 0, -5, -33,
+    -36, -26, -12, -1, 9, -7, 6, -23,
+    -24, -11, 7, 26, 24, 35, -8, -20,
+    -5, 19, 26, 36, 17, 45, 61, 16,
+    27, 32, 58, 62, 80, 67, 26, 44,
+    32, 42, 32, 51, 63, 9, 31, 43
+]
+cdef int16_t MG_QUEEN[64]
+MG_QUEEN[:] = [
+    -1, -18, -9, 10, -15, -25, -31, -50,
+    -35, -8, 11, 2, 8, 15, -3, 1,
+    -14, 2, -11, -2, -5, 2, 14, 5,
+    -9, -26, -9, -10, -2, -4, 3, -3,
+    -27, -27, -16, -16, -1, 17, -2, 1,
+    -13, -17, 7, 8, 29, 56, 47, 57,
+    -24, -39, -5, 1, -16, 57, 28, 54,
+    -28, 0, 29, 12, 59, 44, 43, 45
+]
+cdef int16_t MG_KING[64]
+MG_KING[:] = [
+    -15, 36, 12, -54, 8, -28, 24, 14,
+    1, 7, -8, -64, -43, -16, 9, 8,
+    -14, -14, -22, -46, -44, -30, -15, -27,
+    -49, -1, -27, -39, -46, -44, -33, -51,
+    -17, -20, -12, -27, -30, -25, -14, -36,
+    -9, 24, 2, -16, -20, 6, 22, -22,
+    29, -1, -20, -7, -8, -4, -38, -29,
+    -65, 23, 16, -15, -56, -34, 2, 13
+]
+
+cdef int16_t* MG_TABLES[6]
+MG_TABLES[0] = MG_PAWN
+MG_TABLES[1] = MG_KNIGHT
+MG_TABLES[2] = MG_BISHOP
+MG_TABLES[3] = MG_ROOK
+MG_TABLES[4] = MG_QUEEN
+MG_TABLES[5] = MG_KING
+
+cdef int16_t MATERIAL_MG[6]
+MATERIAL_MG[:] = [82, 337, 365, 477, 1025, 0]
 
 # Free inline functions (pure C, GIL-free)
 cdef inline uint64_t sq_to_bit(int sq) nogil:
@@ -784,6 +868,9 @@ cdef class Board:
     cpdef bint make_move(self, int fr_sq, int to_sq, uint8_t promo=0):
         return self._make_move(<uint8_t>fr_sq, <uint8_t>to_sq, promo)
 
+    cpdef bint push(self, Move move):
+        return self.make_move(move.fr_sq, move.to_sq, move.promo)
+
     cdef void _undo_move(self) nogil:
         if self.undo_index <= 0:
             return
@@ -862,6 +949,35 @@ cdef class Board:
 
     cpdef void undo_move(self):
         self._undo_move()
+
+    cpdef void pop(self):
+        self.undo_move()
+
+    cdef int _eval_pst(self) nogil:
+        cdef int score = 0
+        cdef int sq, ptype, flip
+        cdef uint64_t bit
+
+        # White pieces: material + PST
+        for ptype in range(6):
+            for sq in range(64):
+                bit = sq_to_bit(sq)
+                if self.pieces[ptype] & bit:
+                    score += MATERIAL_MG[ptype] + MG_TABLES[ptype][sq]
+
+        # Black pieces: -(material + PST[flip(sq)])
+        for ptype in range(6):
+            for sq in range(64):
+                bit = sq_to_bit(sq)
+                if self.pieces[ptype + 6] & bit:
+                    flip = flip_sq(sq)
+                    score -= MATERIAL_MG[ptype] + MG_TABLES[ptype][flip]
+
+        return score
+
+    cpdef int eval_pst(self):
+        """Naive PST + material evaluation (centipawns, positive = white advantage)."""
+        return self._eval_pst()
 
     cpdef long long perft(self, int depth):
         if depth == 0:

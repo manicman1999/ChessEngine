@@ -4,7 +4,7 @@ from typing import Optional
 from cychess import Board, alg_to_square
 
 # Assuming your engines are in these paths; adjust if needed
-from src.engines.attn.attnEngine import AttnEngine
+from src.engines.pstEngine.pstEngine import PstEngine
 from src.engines.random.randomEngine import RandomEngine
 from src.engines.chessEngineBase import ChessEngineBase
 
@@ -53,7 +53,7 @@ async def run_game(
             engine = black_engine
             color = "Black"
 
-        move_str = await engine.choose_move(board)
+        move_str = engine.choose_move(board)
         if move_str is None:
             break
 
@@ -104,7 +104,7 @@ async def run_game(
 
 async def main():
     white = RandomEngine()
-    black = RandomEngine()
+    black = PstEngine()
     result = await run_game(white, black)
     print(
         f"\nSummary: {result['winner']} ({result['result']}) after {result['fullmoves']} full moves"

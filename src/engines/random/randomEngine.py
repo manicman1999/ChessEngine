@@ -7,7 +7,8 @@ promo_chars = ['', 'q', 'n', 'b', 'r']
 
 
 class RandomEngine(ChessEngineBase):
-    async def choose_move(self, board: Board) -> Optional[str]:
+
+    def choose_move(self, board: Board) -> Optional[str]:
         legal_moves = board.get_moves_list()
 
         if len(legal_moves) == 0:
