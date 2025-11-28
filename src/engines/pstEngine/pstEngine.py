@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Optional
+from typing import Any, Optional
 from src.engines.chessEngineBase import ChessEngineBase
 from cychess import Board, square_to_alg
 from math import inf
@@ -11,9 +11,11 @@ promo_chars = ['', 'q', 'n', 'b', 'r']
 class PstEngine(ChessEngineBase):
 
     depth: int
+    eval_cache: dict[Any, int]
 
     def __init__(self, depth: int = 4):
         self.depth = depth
+        self.eval_cache = {}
 
     def choose_move(self, board: Board) -> Optional[str]:
         legal_moves = board.get_moves_list()
@@ -36,8 +38,11 @@ class PstEngine(ChessEngineBase):
         for move, (new_evals, score) in zip(legal_moves, results):
             total_evals += new_evals
 
-            if -score > best_score:
-                best_score = -score
+            if board.white_move():
+                score *= -1
+
+            if score > best_score:
+                best_score = score
                 best_move = move
                 best_move_str = f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}"
 
@@ -48,11 +53,16 @@ class PstEngine(ChessEngineBase):
             return best_move_str
 
     def eval_board(self, board: Board) -> int:
-        if (result := board.game_result()) is not None:
-            return int(1e10) * result
+        bhash = board.zobrist_hash()
+        if bhash in self.eval_cache:
+            return self.eval_cache[bhash]
 
-        x = board.eval_pst()
-        return x
+        if (result := board.game_result()) is not None:
+            score = int(1e10) * result
+        else:
+            score = board.eval_pst()
+        self.eval_cache[bhash] = score
+        return score
 
     def negamax(
         self, board: Board, depth: int, alpha: float = -inf, beta: float = inf

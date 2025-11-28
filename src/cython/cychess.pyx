@@ -10,6 +10,7 @@
 # cython: embedsignature=True
 
 from libc.stdint cimport uint64_t, uint8_t, uint16_t, int8_t, int16_t
+import random
 
 # Piece constants (C-level)
 cdef public uint8_t PIECE_NONE = 0
@@ -57,6 +58,26 @@ BISHOP_DIRECTIONS[:] = [9, 7, -7, -9]  # NE NW SW SE
 
 cdef int QUEEN_DIRECTIONS[8]
 QUEEN_DIRECTIONS[:] = [8, -8, 1, -1, 9, 7, -7, -9]  # Rook + Bishop
+
+cdef uint64_t ZOBRIST_PIECE[64][12]
+cdef uint64_t ZOBRIST_SIDE
+cdef uint64_t ZOBRIST_CASTLE[16]
+cdef uint64_t ZOBRIST_EP[65]
+
+cpdef void init_zobrist():
+    """Init Zobrist tables with random 64-bit keys (call once after import)."""
+    cdef int sq, pt, c
+    random.seed(42)  # Reproducible (optional; change for variety)
+    for sq in range(64):
+        for pt in range(12):
+            ZOBRIST_PIECE[sq][pt] = random.getrandbits(64)
+    ZOBRIST_SIDE = random.getrandbits(64)
+    for c in range(16):
+        ZOBRIST_CASTLE[c] = random.getrandbits(64)
+    for sq in range(65):
+        ZOBRIST_EP[sq] = random.getrandbits(64)
+
+init_zobrist()  # Auto-init on module load
 
 # Flip Squares
 cdef inline int flip_sq(int sq) nogil:
@@ -1051,3 +1072,34 @@ cdef class Board:
         new_board.move_count = 0
         # Caches reset in __cinit__
         return new_board
+
+    # Inside Board class (add these)
+    cdef uint64_t _zobrist_hash(self) nogil:
+        """Full Zobrist hash (pieces + side + castle + EP)."""
+        cdef uint64_t h = 0
+        cdef int sq, pt
+        cdef uint64_t bit
+
+        # All pieces (double-loop; upgrade to LSB later)
+        for pt in range(12):
+            for sq in range(64):
+                bit = sq_to_bit(sq)
+                if self.pieces[pt] & bit:
+                    h ^= ZOBRIST_PIECE[sq][pt]
+
+        # Side to move
+        if not self.white_to_move:
+            h ^= ZOBRIST_SIDE
+
+        # Castling rights (0-15 → index)
+        h ^= ZOBRIST_CASTLE[self.castling]
+
+        # EP square (-1=none →64)
+        cdef int ep_idx = 64 if self.ep_square < 0 else self.ep_square
+        h ^= ZOBRIST_EP[ep_idx]
+
+        return h
+
+    cpdef uint64_t zobrist_hash(self):
+        """Python-accessible board hash for TT/eval cache."""
+        return self._zobrist_hash()
