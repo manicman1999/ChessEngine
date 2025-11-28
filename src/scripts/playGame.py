@@ -53,7 +53,7 @@ async def run_game(
             engine = black_engine
             color = "Black"
 
-        move_str = engine.choose_move(board)
+        move_str = engine.choose_move(board.clone())
         if move_str is None:
             break
 

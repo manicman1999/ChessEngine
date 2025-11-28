@@ -24,6 +24,8 @@ class PstEngine(ChessEngineBase):
 
         start_time = time.time()
 
+        start_pst = board.eval_pst()
+
         results = []
         for move in legal_moves:
             board.make_move(*move)
@@ -37,11 +39,11 @@ class PstEngine(ChessEngineBase):
         for move, score in zip(legal_moves, results):
             total_evals += 0
 
-            if board.white_move():
-                score *= -1
+            # if board.white_move():
+            #     score *= -1
 
-            if score > best_score:
-                best_score = score
+            if -score > best_score:
+                best_score = -score
                 best_move = move
                 best_move_str = f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}"
 
