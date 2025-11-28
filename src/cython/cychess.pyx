@@ -340,6 +340,7 @@ cdef class Board:
         cdef bint start_rank = False
         cdef bint attacker_rank_ok, is_promo
         cdef int p
+        cdef int sq_file, tgt_file
 
         for sq in range(64):
             if (sq_to_bit(sq) & pawns_bb) == 0:
@@ -369,28 +370,34 @@ cdef class Board:
             # West cap / EP
             target = sq + PAWN_CAP_WEST[side]
             if 0 <= target < 64:
-                target_bb = sq_to_bit(target)
-                attacker_rank_ok = (side == 0 and (sq // 8) == 4) or (side == 1 and (sq // 8) == 3)
-                if ((target_bb & opp_occ) != 0) or (target == self.ep_square and attacker_rank_ok):
-                    is_promo = is_promo_rank(target, side)
-                    if is_promo:
-                        for p in range(4):
-                            self.add_move(sq, target, p + 1)
-                    else:
-                        self.add_move(sq, target, 0)
+                sq_file = sq % 8
+                tgt_file = target % 8
+                if abs(tgt_file - sq_file) == 1:
+                    target_bb = sq_to_bit(target)
+                    attacker_rank_ok = (side == 0 and (sq // 8) == 4) or (side == 1 and (sq // 8) == 3)
+                    if ((target_bb & opp_occ) != 0) or (target == self.ep_square and attacker_rank_ok):
+                        is_promo = is_promo_rank(target, side)
+                        if is_promo:
+                            for p in range(4):
+                                self.add_move(sq, target, p + 1)
+                        else:
+                            self.add_move(sq, target, 0)
 
             # East cap / EP
             target = sq + PAWN_CAP_EAST[side]
             if 0 <= target < 64:
-                target_bb = sq_to_bit(target)
-                attacker_rank_ok = (side == 0 and (sq // 8) == 4) or (side == 1 and (sq // 8) == 3)
-                if ((target_bb & opp_occ) != 0) or (target == self.ep_square and attacker_rank_ok):
-                    is_promo = is_promo_rank(target, side)
-                    if is_promo:
-                        for p in range(4):
-                            self.add_move(sq, target, p + 1)
-                    else:
-                        self.add_move(sq, target, 0)
+                sq_file = sq % 8
+                tgt_file = target % 8
+                if abs(tgt_file - sq_file) == 1:
+                    target_bb = sq_to_bit(target)
+                    attacker_rank_ok = (side == 0 and (sq // 8) == 4) or (side == 1 and (sq // 8) == 3)
+                    if ((target_bb & opp_occ) != 0) or (target == self.ep_square and attacker_rank_ok):
+                        is_promo = is_promo_rank(target, side)
+                        if is_promo:
+                            for p in range(4):
+                                self.add_move(sq, target, p + 1)
+                        else:
+                            self.add_move(sq, target, 0)
 
         return self.move_count
 

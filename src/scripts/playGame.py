@@ -106,7 +106,7 @@ async def run_game(
 async def main():
     white = RandomEngine()
     black = PstEngine()
-    result = await run_game(white, black)
+    result = await run_game(white, black, 20)
 
     print()
     print(result['pgn'])
