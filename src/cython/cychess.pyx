@@ -116,6 +116,9 @@ cdef class Board:
     cdef UndoState undo_stack[1024]
     cdef int undo_index  # In __cinit__: self.undo_index = 0
 
+    cdef Move move_cache[50][256]
+    cdef int move_count_cache[50]
+
     def __cinit__(self):
         self._clear()
         self.undo_index = 0
@@ -441,21 +444,95 @@ cdef class Board:
                     target += dir_delta
         return self.move_count
 
-    cdef bint _is_in_check(self) nogil:
-        cdef bint defender_white = self.white_to_move
+    cdef bint square_attacked(self, int sq, bint attacker_white) nogil:
+        cdef uint64_t attackers = self.occupancy[0 if attacker_white else 1]
+        cdef uint64_t all_occ = self.occupancy[2]
+        cdef uint64_t attackers_bb, probe_bb
+        cdef int probe_sq, delta, rev_delta
+        cdef uint8_t att_side = 0 if attacker_white else 1
+
+        # Pawns (rev caps)
+        cdef int pawn_rev_west = -PAWN_CAP_WEST[att_side]
+        cdef int pawn_rev_east = -PAWN_CAP_EAST[att_side]
+        probe_sq = sq + pawn_rev_west
+        if 0 <= probe_sq < 64:
+            probe_bb = sq_to_bit(probe_sq)
+            if probe_bb & self.pieces[PIECE_WP - 1 if attacker_white else PIECE_BP - 1]:
+                return True
+        probe_sq = sq + pawn_rev_east
+        if 0 <= probe_sq < 64:
+            probe_bb = sq_to_bit(probe_sq)
+            if probe_bb & self.pieces[PIECE_WP - 1 if attacker_white else PIECE_BP - 1]:
+                return True
+
+        # Knights
+        for delta in range(8):
+            probe_sq = sq + KNIGHT_DELTAS[delta]
+            if 0 <= probe_sq < 64:
+                probe_bb = sq_to_bit(probe_sq)
+                if probe_bb & self.pieces[PIECE_WN - 1 if attacker_white else PIECE_BN - 1]:
+                    return True
+
+        # King
+        for delta in range(8):
+            probe_sq = sq + KING_DELTAS[delta]
+            if 0 <= probe_sq < 64:
+                probe_bb = sq_to_bit(probe_sq)
+                if probe_bb & self.pieces[PIECE_WK - 1 if attacker_white else PIECE_BK - 1]:
+                    return True
+
+        cdef int orig_file = sq % 8
+        cdef int orig_rank = sq // 8
+        cdef int pfile, prank, dfile, drank
+        cdef uint64_t att_rook = (self.pieces[PIECE_WR - 1 if attacker_white else PIECE_BR - 1] |
+                                self.pieces[PIECE_WQ - 1 if attacker_white else PIECE_BQ - 1])
+        cdef int d
+
+        # Rook ortho
+        for d in range(4):
+            rev_delta = -ROOK_DIRECTIONS[d]
+            probe_sq = sq + rev_delta
+            while 0 <= probe_sq < 64:
+                pfile = probe_sq % 8
+                prank = probe_sq // 8
+                dfile = pfile - orig_file
+                drank = prank - orig_rank
+                if dfile != 0 and drank != 0:  # Not ortho
+                    break
+                probe_bb = sq_to_bit(probe_sq)
+                if probe_bb & all_occ:
+                    if probe_bb & att_rook:
+                        return True
+                    break
+                probe_sq += rev_delta
+
+        # Bishop diag
+        cdef uint64_t att_bishop = (self.pieces[PIECE_WB - 1 if attacker_white else PIECE_BB - 1] |
+                                    self.pieces[PIECE_WQ - 1 if attacker_white else PIECE_BQ - 1])
+        for d in range(4):
+            rev_delta = -BISHOP_DIRECTIONS[d]
+            probe_sq = sq + rev_delta
+            while 0 <= probe_sq < 64:
+                pfile = probe_sq % 8
+                prank = probe_sq // 8
+                dfile = pfile - orig_file
+                drank = prank - orig_rank
+                if abs(dfile) != abs(drank):
+                    break
+                probe_bb = sq_to_bit(probe_sq)
+                if probe_bb & all_occ:
+                    if probe_bb & att_bishop:
+                        return True
+                    break
+                probe_sq += rev_delta
+
+        return False
+
+    cdef bint _is_in_check(self, bint check_invalid = False) nogil:
+        cdef bint defender_white = self.white_to_move ^ check_invalid
         cdef int ksq = self.find_king_sq(defender_white)
         cdef bint attacker_white = not defender_white
-        cdef bint saved_wtm = self.white_to_move
-        self.white_to_move = attacker_white
-        self.generate_pseudo_legal_moves()
-        cdef bint attacked = False
-        cdef int i
-        for i in range(self.move_count):
-            if self.moves[i].to_sq == ksq:
-                attacked = True
-                break
-        self.white_to_move = saved_wtm
-        return attacked
+        return self.square_attacked(ksq, attacker_white)
 
     cdef int generate_pseudo_legal_moves(self) nogil:
         self.move_count = 0
@@ -499,7 +576,7 @@ cdef class Board:
             temp_moves[i] = self.moves[i]
         for i in range(pseudo_count):
             if self._make_move(temp_moves[i].fr_sq, temp_moves[i].to_sq, temp_moves[i].promo):
-                if not self._is_in_check():
+                if not self._is_in_check(check_invalid=True):
                     self.moves[legal_count] = temp_moves[i]
                     legal_count += 1
                 self._undo_move()
@@ -772,18 +849,16 @@ cdef class Board:
     cpdef long long perft(self, int depth):
         if depth == 0:
             return 1
-
-        self.generate_pseudo_legal_moves()
-        cdef int num_moves = self.move_count  # Snapshot
-        cdef Move local_moves[256]  # Local copy (C struct copy fast)
+        self.generate_legal_moves()
+        
         cdef int j
-        for j in range(num_moves):
-            local_moves[j] = self.moves[j]  # Copy array (~20-200 copies/ply, negligible)
-
+        for j in range(self.move_count):
+            self.move_cache[depth][j] = self.moves[j]
+        self.move_count_cache[depth] = self.move_count
         cdef long long nodes = 0
         cdef int i
-        for i in range(num_moves):
-            if self._make_move(local_moves[i].fr_sq, local_moves[i].to_sq, local_moves[i].promo):
+        for i in range(self.move_count_cache[depth]):
+            if self._make_move(self.move_cache[depth][i].fr_sq, self.move_cache[depth][i].to_sq, self.move_cache[depth][i].promo):
                 nodes += self.perft(depth - 1)
                 self._undo_move()
         return nodes
