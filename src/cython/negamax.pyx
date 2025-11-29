@@ -14,10 +14,10 @@ from libc.stdint cimport uint16_t
 
 from cychess import Board
 
-cpdef int negamax(object board, int depth, double alpha = -INFINITY, double beta = INFINITY):
+cpdef int negamax(object board, int depth, int alpha = -10000, int beta = 10000):
     return _negamax(board, depth, alpha, beta)
 
-cdef int _negamax(object board, int depth, double alpha, double beta):
+cdef int _negamax(object board, int depth, int alpha, int beta):
     if depth == 0:
         return board.eval_pst()
 
@@ -46,7 +46,7 @@ cdef int _negamax(object board, int depth, double alpha, double beta):
         if score > max_score:
             max_score = score
         if score > alpha:
-            alpha = <double>score
+            alpha = score
         if alpha >= beta:
             break
 

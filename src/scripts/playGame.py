@@ -36,7 +36,7 @@ async def run_game(
     white_engine: ChessEngineBase,
     black_engine: ChessEngineBase,
     max_fullmoves: int = 200,
-    rand_moves: int = 4,
+    rand_moves: int = 2,
 ) -> dict[str, str]:
     board = Board()
     board.set_start_position()

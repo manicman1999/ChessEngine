@@ -95,3 +95,4 @@ celerybeat-schedule
 # cython compiled
 *.c
 *.h
+*.cpp

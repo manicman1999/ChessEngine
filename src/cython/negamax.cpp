@@ -2701,7 +2701,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
  *     if depth == 0:
  *         return board.eval_pst()             # <<<<<<<<<<<<<<
  * 
- *     cdef int max_score = -8000
+ *     cdef int max_score = -9999  # Safer bound (covers full material)
 */
     __pyx_t_3 = __pyx_v_board;
     __Pyx_INCREF(__pyx_t_3);
@@ -2730,11 +2730,11 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
   /* "negamax.pyx":24
  *         return board.eval_pst()
  * 
- *     cdef int max_score = -8000             # <<<<<<<<<<<<<<
+ *     cdef int max_score = -9999  # Safer bound (covers full material)             # <<<<<<<<<<<<<<
  *     cdef int i
  *     cdef object move
 */
-  __pyx_v_max_score = -8000;
+  __pyx_v_max_score = -9999;
 
   /* "negamax.pyx":27
  *     cdef int i
@@ -2777,7 +2777,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
  *     if len(moves) == 0:
  *         if board.is_in_check():             # <<<<<<<<<<<<<<
  *             if board.white_move():
- *                 return 8000
+ *                 return -8000  # White to move + checkmate = white loses (bad for white)
 */
     __pyx_t_3 = __pyx_v_board;
     __Pyx_INCREF(__pyx_t_3);
@@ -2797,8 +2797,8 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
  *     if len(moves) == 0:
  *         if board.is_in_check():
  *             if board.white_move():             # <<<<<<<<<<<<<<
- *                 return 8000
- *             return -8000
+ *                 return -8000  # White to move + checkmate = white loses (bad for white)
+ *             else:
 */
       __pyx_t_3 = __pyx_v_board;
       __Pyx_INCREF(__pyx_t_3);
@@ -2817,45 +2817,47 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
         /* "negamax.pyx":33
  *         if board.is_in_check():
  *             if board.white_move():
- *                 return 8000             # <<<<<<<<<<<<<<
- *             return -8000
- *         return 0
+ *                 return -8000  # White to move + checkmate = white loses (bad for white)             # <<<<<<<<<<<<<<
+ *             else:
+ *                 return 8000   # Black to move + checkmate = black loses (good for white)
 */
-        __pyx_r = 0x1F40;
+        __pyx_r = -8000;
         goto __pyx_L0;
 
         /* "negamax.pyx":32
  *     if len(moves) == 0:
  *         if board.is_in_check():
  *             if board.white_move():             # <<<<<<<<<<<<<<
- *                 return 8000
- *             return -8000
+ *                 return -8000  # White to move + checkmate = white loses (bad for white)
+ *             else:
 */
       }
 
-      /* "negamax.pyx":34
- *             if board.white_move():
- *                 return 8000
- *             return -8000             # <<<<<<<<<<<<<<
- *         return 0
+      /* "negamax.pyx":35
+ *                 return -8000  # White to move + checkmate = white loses (bad for white)
+ *             else:
+ *                 return 8000   # Black to move + checkmate = black loses (good for white)             # <<<<<<<<<<<<<<
+ *         return 0  # Stalemate
  * 
 */
-      __pyx_r = -8000;
-      goto __pyx_L0;
+      /*else*/ {
+        __pyx_r = 0x1F40;
+        goto __pyx_L0;
+      }
 
       /* "negamax.pyx":31
  * 
  *     if len(moves) == 0:
  *         if board.is_in_check():             # <<<<<<<<<<<<<<
  *             if board.white_move():
- *                 return 8000
+ *                 return -8000  # White to move + checkmate = white loses (bad for white)
 */
     }
 
-    /* "negamax.pyx":35
- *                 return 8000
- *             return -8000
- *         return 0             # <<<<<<<<<<<<<<
+    /* "negamax.pyx":36
+ *             else:
+ *                 return 8000   # Black to move + checkmate = black loses (good for white)
+ *         return 0  # Stalemate             # <<<<<<<<<<<<<<
  * 
  *     for move in moves:
 */
@@ -2871,8 +2873,8 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
   }
 
-  /* "negamax.pyx":37
- *         return 0
+  /* "negamax.pyx":38
+ *         return 0  # Stalemate
  * 
  *     for move in moves:             # <<<<<<<<<<<<<<
  *         if board.make_move(move[0], move[1], move[2]):
@@ -2880,7 +2882,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
   if (unlikely(__pyx_v_moves == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    __PYX_ERR(0, 37, __pyx_L1_error)
+    __PYX_ERR(0, 38, __pyx_L1_error)
   }
   __pyx_t_2 = __pyx_v_moves; __Pyx_INCREF(__pyx_t_2);
   __pyx_t_6 = 0;
@@ -2888,18 +2890,18 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
     {
       Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_2);
       #if !CYTHON_ASSUME_SAFE_SIZE
-      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 37, __pyx_L1_error)
+      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 38, __pyx_L1_error)
       #endif
       if (__pyx_t_6 >= __pyx_temp) break;
     }
     __pyx_t_3 = __Pyx_PyList_GetItemRefFast(__pyx_t_2, __pyx_t_6, __Pyx_ReferenceSharing_OwnStrongReference);
     ++__pyx_t_6;
-    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 37, __pyx_L1_error)
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 38, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_XDECREF_SET(__pyx_v_move, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "negamax.pyx":38
+    /* "negamax.pyx":39
  * 
  *     for move in moves:
  *         if board.make_move(move[0], move[1], move[2]):             # <<<<<<<<<<<<<<
@@ -2908,11 +2910,11 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
     __pyx_t_7 = __pyx_v_board;
     __Pyx_INCREF(__pyx_t_7);
-    __pyx_t_8 = __Pyx_GetItemInt(__pyx_v_move, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 38, __pyx_L1_error)
+    __pyx_t_8 = __Pyx_GetItemInt(__pyx_v_move, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 39, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_9 = __Pyx_GetItemInt(__pyx_v_move, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 38, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_GetItemInt(__pyx_v_move, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 39, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_10 = __Pyx_GetItemInt(__pyx_v_move, 2, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 38, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_GetItemInt(__pyx_v_move, 2, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 39, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __pyx_t_4 = 0;
     {
@@ -2922,29 +2924,29 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 38, __pyx_L1_error)
+      if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 39, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
     }
-    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 38, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 39, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     if (__pyx_t_1) {
 
-      /* "negamax.pyx":39
+      /* "negamax.pyx":40
  *     for move in moves:
  *         if board.make_move(move[0], move[1], move[2]):
  *             score = _negamax(board, depth - 1, -beta, -alpha)             # <<<<<<<<<<<<<<
  *             board.undo_move()
  *         else:
 */
-      __pyx_t_5 = __pyx_f_7negamax__negamax(__pyx_v_board, (__pyx_v_depth - 1), (-__pyx_v_beta), (-__pyx_v_alpha)); if (unlikely(__pyx_t_5 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 39, __pyx_L1_error)
+      __pyx_t_5 = __pyx_f_7negamax__negamax(__pyx_v_board, (__pyx_v_depth - 1), (-__pyx_v_beta), (-__pyx_v_alpha)); if (unlikely(__pyx_t_5 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 40, __pyx_L1_error)
       __pyx_v_score = __pyx_t_5;
 
-      /* "negamax.pyx":40
+      /* "negamax.pyx":41
  *         if board.make_move(move[0], move[1], move[2]):
  *             score = _negamax(board, depth - 1, -beta, -alpha)
  *             board.undo_move()             # <<<<<<<<<<<<<<
  *         else:
- *             score = 0
+ *             score = 0  # Shouldn't happen for legal moves
 */
       __pyx_t_10 = __pyx_v_board;
       __Pyx_INCREF(__pyx_t_10);
@@ -2953,12 +2955,12 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
         PyObject *__pyx_callargs[2] = {__pyx_t_10, NULL};
         __pyx_t_3 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_undo_move, __pyx_callargs+__pyx_t_4, (1-__pyx_t_4) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
         __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 40, __pyx_L1_error)
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 41, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "negamax.pyx":38
+      /* "negamax.pyx":39
  * 
  *     for move in moves:
  *         if board.make_move(move[0], move[1], move[2]):             # <<<<<<<<<<<<<<
@@ -2968,10 +2970,10 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
       goto __pyx_L9;
     }
 
-    /* "negamax.pyx":42
+    /* "negamax.pyx":43
  *             board.undo_move()
  *         else:
- *             score = 0             # <<<<<<<<<<<<<<
+ *             score = 0  # Shouldn't happen for legal moves             # <<<<<<<<<<<<<<
  * 
  *         score = -score
 */
@@ -2980,8 +2982,8 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
     }
     __pyx_L9:;
 
-    /* "negamax.pyx":44
- *             score = 0
+    /* "negamax.pyx":45
+ *             score = 0  # Shouldn't happen for legal moves
  * 
  *         score = -score             # <<<<<<<<<<<<<<
  *         if score > max_score:
@@ -2989,7 +2991,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
     __pyx_v_score = (-__pyx_v_score);
 
-    /* "negamax.pyx":45
+    /* "negamax.pyx":46
  * 
  *         score = -score
  *         if score > max_score:             # <<<<<<<<<<<<<<
@@ -2999,7 +3001,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
     __pyx_t_1 = (__pyx_v_score > __pyx_v_max_score);
     if (__pyx_t_1) {
 
-      /* "negamax.pyx":46
+      /* "negamax.pyx":47
  *         score = -score
  *         if score > max_score:
  *             max_score = score             # <<<<<<<<<<<<<<
@@ -3008,7 +3010,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
       __pyx_v_max_score = __pyx_v_score;
 
-      /* "negamax.pyx":45
+      /* "negamax.pyx":46
  * 
  *         score = -score
  *         if score > max_score:             # <<<<<<<<<<<<<<
@@ -3017,7 +3019,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
     }
 
-    /* "negamax.pyx":47
+    /* "negamax.pyx":48
  *         if score > max_score:
  *             max_score = score
  *         if score > alpha:             # <<<<<<<<<<<<<<
@@ -3027,7 +3029,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
     __pyx_t_1 = (__pyx_v_score > __pyx_v_alpha);
     if (__pyx_t_1) {
 
-      /* "negamax.pyx":48
+      /* "negamax.pyx":49
  *             max_score = score
  *         if score > alpha:
  *             alpha = score             # <<<<<<<<<<<<<<
@@ -3036,7 +3038,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
       __pyx_v_alpha = __pyx_v_score;
 
-      /* "negamax.pyx":47
+      /* "negamax.pyx":48
  *         if score > max_score:
  *             max_score = score
  *         if score > alpha:             # <<<<<<<<<<<<<<
@@ -3045,7 +3047,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
     }
 
-    /* "negamax.pyx":49
+    /* "negamax.pyx":50
  *         if score > alpha:
  *             alpha = score
  *         if alpha >= beta:             # <<<<<<<<<<<<<<
@@ -3055,7 +3057,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
     __pyx_t_1 = (__pyx_v_alpha >= __pyx_v_beta);
     if (__pyx_t_1) {
 
-      /* "negamax.pyx":50
+      /* "negamax.pyx":51
  *             alpha = score
  *         if alpha >= beta:
  *             break             # <<<<<<<<<<<<<<
@@ -3064,7 +3066,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
       goto __pyx_L8_break;
 
-      /* "negamax.pyx":49
+      /* "negamax.pyx":50
  *         if score > alpha:
  *             alpha = score
  *         if alpha >= beta:             # <<<<<<<<<<<<<<
@@ -3073,8 +3075,8 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
     }
 
-    /* "negamax.pyx":37
- *         return 0
+    /* "negamax.pyx":38
+ *         return 0  # Stalemate
  * 
  *     for move in moves:             # <<<<<<<<<<<<<<
  *         if board.make_move(move[0], move[1], move[2]):
@@ -3088,7 +3090,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
   goto __pyx_L13_for_end;
   __pyx_L13_for_end:;
 
-  /* "negamax.pyx":52
+  /* "negamax.pyx":53
  *             break
  * 
  *     return max_score             # <<<<<<<<<<<<<<
