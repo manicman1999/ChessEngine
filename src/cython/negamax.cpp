@@ -1534,14 +1534,14 @@ struct __pyx_opt_args_7negamax_negamax;
 /* "negamax.pyx":17
  * from cychess import Board
  * 
- * cpdef int negamax(object board, int depth, double alpha = -INFINITY, double beta = INFINITY):             # <<<<<<<<<<<<<<
+ * cpdef int negamax(object board, int depth, int alpha = -10000, int beta = 10000):             # <<<<<<<<<<<<<<
  *     return _negamax(board, depth, alpha, beta)
  * 
 */
 struct __pyx_opt_args_7negamax_negamax {
   int __pyx_n;
-  double alpha;
-  double beta;
+  int alpha;
+  int beta;
 };
 /* #### Code section: utility_code_proto ### */
 
@@ -2270,7 +2270,7 @@ static int __Pyx_State_RemoveModule(void*);
 
 /* Module declarations from "negamax" */
 static int __pyx_f_7negamax_negamax(PyObject *, int, int __pyx_skip_dispatch, struct __pyx_opt_args_7negamax_negamax *__pyx_optional_args); /*proto*/
-static int __pyx_f_7negamax__negamax(PyObject *, int, double, double); /*proto*/
+static int __pyx_f_7negamax__negamax(PyObject *, int, int, int); /*proto*/
 /* #### Code section: typeinfo ### */
 /* #### Code section: before_global_var ### */
 #define __Pyx_MODULE_NAME "negamax"
@@ -2281,7 +2281,7 @@ int __pyx_module_is_main_negamax = 0;
 /* #### Code section: global_var ### */
 /* #### Code section: string_decls ### */
 /* #### Code section: decls ### */
-static PyObject *__pyx_pf_7negamax_negamax(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_board, int __pyx_v_depth, double __pyx_v_alpha, double __pyx_v_beta); /* proto */
+static PyObject *__pyx_pf_7negamax_negamax(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_board, int __pyx_v_depth, int __pyx_v_alpha, int __pyx_v_beta); /* proto */
 /* #### Code section: late_includes ### */
 /* #### Code section: module_state ### */
 /* SmallCodeConfig */
@@ -2305,10 +2305,10 @@ typedef struct {
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_items;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_pop;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_values;
-  double __pyx_k_;
-  double __pyx_k__2;
+  PyObject *__pyx_tuple[1];
   PyObject *__pyx_codeobj_tab[1];
   PyObject *__pyx_string_tab[32];
+  PyObject *__pyx_number_tab[2];
 /* #### Code section: module_state_contents ### */
 /* CommonTypesMetaclass.module_state_decls */
 PyTypeObject *__pyx_CommonTypesMetaclassType;
@@ -2349,8 +2349,8 @@ static __pyx_mstatetype __pyx_mstate_global_static =
 static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_static;
 #endif
 /* #### Code section: constant_name_defines ### */
-#define __pyx_kp_u__3 __pyx_string_tab[0]
-#define __pyx_kp_u__4 __pyx_string_tab[1]
+#define __pyx_kp_u_ __pyx_string_tab[0]
+#define __pyx_kp_u__2 __pyx_string_tab[1]
 #define __pyx_kp_u_src_cython_negamax_pyx __pyx_string_tab[2]
 #define __pyx_n_u_Board __pyx_string_tab[3]
 #define __pyx_n_u_Pyx_PyDict_NextRef __pyx_string_tab[4]
@@ -2380,7 +2380,9 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 #define __pyx_n_u_undo_move __pyx_string_tab[28]
 #define __pyx_n_u_values __pyx_string_tab[29]
 #define __pyx_n_u_white_move __pyx_string_tab[30]
-#define __pyx_kp_b_iso88591_SST_81G7 __pyx_string_tab[31]
+#define __pyx_kp_b_iso88591_88J_81G7 __pyx_string_tab[31]
+#define __pyx_int_neg_10000 __pyx_number_tab[0]
+#define __pyx_int_10000 __pyx_number_tab[1]
 /* #### Code section: module_state_clear ### */
 #if CYTHON_USE_MODULE_STATE
 static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
@@ -2395,8 +2397,10 @@ static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
   #if CYTHON_PEP489_MULTI_PHASE_INIT
   __Pyx_State_RemoveModule(NULL);
   #endif
+  for (int i=0; i<1; ++i) { Py_CLEAR(clear_module_state->__pyx_tuple[i]); }
   for (int i=0; i<1; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
   for (int i=0; i<32; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<2; ++i) { Py_CLEAR(clear_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_clear_contents ### */
 /* CommonTypesMetaclass.module_state_clear */
 Py_CLEAR(clear_module_state->__pyx_CommonTypesMetaclassType);
@@ -2419,8 +2423,10 @@ static CYTHON_SMALL_CODE int __pyx_m_traverse(PyObject *m, visitproc visit, void
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_tuple);
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_bytes);
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_unicode);
+  for (int i=0; i<1; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_tuple[i]); }
   for (int i=0; i<1; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
   for (int i=0; i<32; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<2; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_traverse_contents ### */
 /* CommonTypesMetaclass.module_state_traverse */
 Py_VISIT(traverse_module_state->__pyx_CommonTypesMetaclassType);
@@ -2437,7 +2443,7 @@ return 0;
 /* "negamax.pyx":17
  * from cychess import Board
  * 
- * cpdef int negamax(object board, int depth, double alpha = -INFINITY, double beta = INFINITY):             # <<<<<<<<<<<<<<
+ * cpdef int negamax(object board, int depth, int alpha = -10000, int beta = 10000):             # <<<<<<<<<<<<<<
  *     return _negamax(board, depth, alpha, beta)
  * 
 */
@@ -2450,8 +2456,8 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
 static int __pyx_f_7negamax_negamax(PyObject *__pyx_v_board, int __pyx_v_depth, CYTHON_UNUSED int __pyx_skip_dispatch, struct __pyx_opt_args_7negamax_negamax *__pyx_optional_args) {
-  double __pyx_v_alpha = __pyx_mstate_global->__pyx_k_;
-  double __pyx_v_beta = __pyx_mstate_global->__pyx_k__2;
+  int __pyx_v_alpha = ((int)-10000);
+  int __pyx_v_beta = ((int)0x2710);
   int __pyx_r;
   int __pyx_t_1;
   int __pyx_lineno = 0;
@@ -2468,10 +2474,10 @@ static int __pyx_f_7negamax_negamax(PyObject *__pyx_v_board, int __pyx_v_depth, 
 
   /* "negamax.pyx":18
  * 
- * cpdef int negamax(object board, int depth, double alpha = -INFINITY, double beta = INFINITY):
+ * cpdef int negamax(object board, int depth, int alpha = -10000, int beta = 10000):
  *     return _negamax(board, depth, alpha, beta)             # <<<<<<<<<<<<<<
  * 
- * cdef int _negamax(object board, int depth, double alpha, double beta):
+ * cdef int _negamax(object board, int depth, int alpha, int beta):
 */
   __pyx_t_1 = __pyx_f_7negamax__negamax(__pyx_v_board, __pyx_v_depth, __pyx_v_alpha, __pyx_v_beta); if (unlikely(__pyx_t_1 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 18, __pyx_L1_error)
   __pyx_r = __pyx_t_1;
@@ -2480,7 +2486,7 @@ static int __pyx_f_7negamax_negamax(PyObject *__pyx_v_board, int __pyx_v_depth, 
   /* "negamax.pyx":17
  * from cychess import Board
  * 
- * cpdef int negamax(object board, int depth, double alpha = -INFINITY, double beta = INFINITY):             # <<<<<<<<<<<<<<
+ * cpdef int negamax(object board, int depth, int alpha = -10000, int beta = 10000):             # <<<<<<<<<<<<<<
  *     return _negamax(board, depth, alpha, beta)
  * 
 */
@@ -2501,7 +2507,7 @@ PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_7negamax_negamax, "negamax(board, int depth, double alpha=-INFINITY, double beta=INFINITY) -> int");
+PyDoc_STRVAR(__pyx_doc_7negamax_negamax, "negamax(board, int depth, int alpha=-10000, int beta=10000) -> int");
 static PyMethodDef __pyx_mdef_7negamax_1negamax = {"negamax", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_7negamax_1negamax, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_7negamax_negamax};
 static PyObject *__pyx_pw_7negamax_1negamax(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
@@ -2512,8 +2518,8 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
 ) {
   PyObject *__pyx_v_board = 0;
   int __pyx_v_depth;
-  double __pyx_v_alpha;
-  double __pyx_v_beta;
+  int __pyx_v_alpha;
+  int __pyx_v_beta;
   #if !CYTHON_METH_FASTCALL
   CYTHON_UNUSED Py_ssize_t __pyx_nargs;
   #endif
@@ -2585,14 +2591,14 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
     __pyx_v_board = values[0];
     __pyx_v_depth = __Pyx_PyLong_As_int(values[1]); if (unlikely((__pyx_v_depth == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 17, __pyx_L3_error)
     if (values[2]) {
-      __pyx_v_alpha = __Pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_alpha == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 17, __pyx_L3_error)
+      __pyx_v_alpha = __Pyx_PyLong_As_int(values[2]); if (unlikely((__pyx_v_alpha == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 17, __pyx_L3_error)
     } else {
-      __pyx_v_alpha = __pyx_mstate_global->__pyx_k_;
+      __pyx_v_alpha = ((int)-10000);
     }
     if (values[3]) {
-      __pyx_v_beta = __Pyx_PyFloat_AsDouble(values[3]); if (unlikely((__pyx_v_beta == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 17, __pyx_L3_error)
+      __pyx_v_beta = __Pyx_PyLong_As_int(values[3]); if (unlikely((__pyx_v_beta == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 17, __pyx_L3_error)
     } else {
-      __pyx_v_beta = __pyx_mstate_global->__pyx_k__2;
+      __pyx_v_beta = ((int)0x2710);
     }
   }
   goto __pyx_L6_skip;
@@ -2618,7 +2624,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7negamax_negamax(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_board, int __pyx_v_depth, double __pyx_v_alpha, double __pyx_v_beta) {
+static PyObject *__pyx_pf_7negamax_negamax(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_board, int __pyx_v_depth, int __pyx_v_alpha, int __pyx_v_beta) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -2653,12 +2659,12 @@ static PyObject *__pyx_pf_7negamax_negamax(CYTHON_UNUSED PyObject *__pyx_self, P
 /* "negamax.pyx":20
  *     return _negamax(board, depth, alpha, beta)
  * 
- * cdef int _negamax(object board, int depth, double alpha, double beta):             # <<<<<<<<<<<<<<
+ * cdef int _negamax(object board, int depth, int alpha, int beta):             # <<<<<<<<<<<<<<
  *     if depth == 0:
  *         return board.eval_pst()
 */
 
-static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth, double __pyx_v_alpha, double __pyx_v_beta) {
+static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth, int __pyx_v_alpha, int __pyx_v_beta) {
   int __pyx_v_max_score;
   PyObject *__pyx_v_move = 0;
   PyObject *__pyx_v_moves = 0;
@@ -2682,7 +2688,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 
   /* "negamax.pyx":21
  * 
- * cdef int _negamax(object board, int depth, double alpha, double beta):
+ * cdef int _negamax(object board, int depth, int alpha, int beta):
  *     if depth == 0:             # <<<<<<<<<<<<<<
  *         return board.eval_pst()
  * 
@@ -2691,7 +2697,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
   if (__pyx_t_1) {
 
     /* "negamax.pyx":22
- * cdef int _negamax(object board, int depth, double alpha, double beta):
+ * cdef int _negamax(object board, int depth, int alpha, int beta):
  *     if depth == 0:
  *         return board.eval_pst()             # <<<<<<<<<<<<<<
  * 
@@ -2714,7 +2720,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 
     /* "negamax.pyx":21
  * 
- * cdef int _negamax(object board, int depth, double alpha, double beta):
+ * cdef int _negamax(object board, int depth, int alpha, int beta):
  *     if depth == 0:             # <<<<<<<<<<<<<<
  *         return board.eval_pst()
  * 
@@ -2998,7 +3004,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
  *         if score > max_score:
  *             max_score = score             # <<<<<<<<<<<<<<
  *         if score > alpha:
- *             alpha = <double>score
+ *             alpha = score
 */
       __pyx_v_max_score = __pyx_v_score;
 
@@ -3015,7 +3021,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
  *         if score > max_score:
  *             max_score = score
  *         if score > alpha:             # <<<<<<<<<<<<<<
- *             alpha = <double>score
+ *             alpha = score
  *         if alpha >= beta:
 */
     __pyx_t_1 = (__pyx_v_score > __pyx_v_alpha);
@@ -3024,24 +3030,24 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
       /* "negamax.pyx":48
  *             max_score = score
  *         if score > alpha:
- *             alpha = <double>score             # <<<<<<<<<<<<<<
+ *             alpha = score             # <<<<<<<<<<<<<<
  *         if alpha >= beta:
  *             break
 */
-      __pyx_v_alpha = ((double)__pyx_v_score);
+      __pyx_v_alpha = __pyx_v_score;
 
       /* "negamax.pyx":47
  *         if score > max_score:
  *             max_score = score
  *         if score > alpha:             # <<<<<<<<<<<<<<
- *             alpha = <double>score
+ *             alpha = score
  *         if alpha >= beta:
 */
     }
 
     /* "negamax.pyx":49
  *         if score > alpha:
- *             alpha = <double>score
+ *             alpha = score
  *         if alpha >= beta:             # <<<<<<<<<<<<<<
  *             break
  * 
@@ -3050,7 +3056,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
     if (__pyx_t_1) {
 
       /* "negamax.pyx":50
- *             alpha = <double>score
+ *             alpha = score
  *         if alpha >= beta:
  *             break             # <<<<<<<<<<<<<<
  * 
@@ -3060,7 +3066,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 
       /* "negamax.pyx":49
  *         if score > alpha:
- *             alpha = <double>score
+ *             alpha = score
  *         if alpha >= beta:             # <<<<<<<<<<<<<<
  *             break
  * 
@@ -3093,7 +3099,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
   /* "negamax.pyx":20
  *     return _negamax(board, depth, alpha, beta)
  * 
- * cdef int _negamax(object board, int depth, double alpha, double beta):             # <<<<<<<<<<<<<<
+ * cdef int _negamax(object board, int depth, int alpha, int beta):             # <<<<<<<<<<<<<<
  *     if depth == 0:
  *         return board.eval_pst()
 */
@@ -3379,7 +3385,6 @@ static CYTHON_SMALL_CODE int __pyx_pymod_exec_negamax(PyObject *__pyx_pyinit_mod
   PyObject *__pyx_t_2 = NULL;
   Py_ssize_t __pyx_t_3;
   PyObject *__pyx_t_4 = NULL;
-  PyObject *__pyx_t_5 = NULL;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -3471,7 +3476,7 @@ __Pyx_RefNannySetupContext("PyInit_negamax", 0);
  * 
  * from cychess import Board             # <<<<<<<<<<<<<<
  * 
- * cpdef int negamax(object board, int depth, double alpha = -INFINITY, double beta = INFINITY):
+ * cpdef int negamax(object board, int depth, int alpha = -10000, int beta = 10000):
 */
   {
     PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_Board};
@@ -3493,39 +3498,28 @@ __Pyx_RefNannySetupContext("PyInit_negamax", 0);
   /* "negamax.pyx":17
  * from cychess import Board
  * 
- * cpdef int negamax(object board, int depth, double alpha = -INFINITY, double beta = INFINITY):             # <<<<<<<<<<<<<<
+ * cpdef int negamax(object board, int depth, int alpha = -10000, int beta = 10000):             # <<<<<<<<<<<<<<
  *     return _negamax(board, depth, alpha, beta)
  * 
 */
-  __pyx_mstate_global->__pyx_k_ = (-INFINITY);
-  __pyx_mstate_global->__pyx_k__2 = INFINITY;
-  __pyx_t_2 = PyFloat_FromDouble((-INFINITY)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 17, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7negamax_1negamax, 0, __pyx_mstate_global->__pyx_n_u_negamax, NULL, __pyx_mstate_global->__pyx_n_u_negamax, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 17, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyFloat_FromDouble(INFINITY); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 17, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyTuple_Pack(2, __pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 17, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_7negamax_1negamax, 0, __pyx_mstate_global->__pyx_n_u_negamax, NULL, __pyx_mstate_global->__pyx_n_u_negamax, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 17, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
-  PyUnstable_Object_EnableDeferredRefcount(__pyx_t_4);
+  PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
   #endif
-  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_4, __pyx_t_5);
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_negamax, __pyx_t_4) < (0)) __PYX_ERR(0, 17, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_2, __pyx_mstate_global->__pyx_tuple[0]);
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_negamax, __pyx_t_2) < (0)) __PYX_ERR(0, 17, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "negamax.pyx":1
  * # negamax_search.pyx             # <<<<<<<<<<<<<<
  * # distutils: language = c++
  * # cython: language_level=3
 */
-  __pyx_t_4 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_test, __pyx_t_4) < (0)) __PYX_ERR(0, 1, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_2 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_test, __pyx_t_2) < (0)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /*--- Wrapped vars code ---*/
 
@@ -3533,7 +3527,6 @@ __Pyx_RefNannySetupContext("PyInit_negamax", 0);
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_5);
   if (__pyx_m) {
     if (__pyx_mstate->__pyx_d && stringtab_initialized) {
       __Pyx_AddTraceback("init negamax", __pyx_clineno, __pyx_lineno, __pyx_filename);
@@ -3581,33 +3574,59 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
   __Pyx_RefNannyDeclarations
   CYTHON_UNUSED_VAR(__pyx_mstate);
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
+
+  /* "negamax.pyx":17
+ * from cychess import Board
+ * 
+ * cpdef int negamax(object board, int depth, int alpha = -10000, int beta = 10000):             # <<<<<<<<<<<<<<
+ *     return _negamax(board, depth, alpha, beta)
+ * 
+*/
+  __pyx_mstate_global->__pyx_tuple[0] = PyTuple_Pack(2, __pyx_mstate_global->__pyx_int_neg_10000, __pyx_mstate_global->__pyx_int_10000); if (unlikely(!__pyx_mstate_global->__pyx_tuple[0])) __PYX_ERR(0, 17, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[0]);
+  __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[0]);
+  #if CYTHON_IMMORTAL_CONSTANTS
+  {
+    PyObject **table = __pyx_mstate->__pyx_tuple;
+    for (Py_ssize_t i=0; i<1; ++i) {
+      #if CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
+      Py_SET_REFCNT(table[i], _Py_IMMORTAL_REFCNT_LOCAL);
+      #else
+      Py_SET_REFCNT(table[i], _Py_IMMORTAL_INITIAL_REFCNT);
+      #endif
+    }
+  }
+  #endif
   __Pyx_RefNannyFinishContext();
   return 0;
+  __pyx_L1_error:;
+  __Pyx_RefNannyFinishContext();
+  return -1;
 }
 /* #### Code section: init_constants ### */
 
 static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
-    const struct { const unsigned int length: 5; } index[] = {{1},{1},{22},{5},{20},{5},{18},{4},{5},{18},{7},{5},{8},{8},{14},{13},{11},{5},{8},{9},{10},{8},{7},{3},{12},{12},{10},{8},{9},{6},{10},{29}};
-    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (292 bytes) */
-const char* const cstring = "BZh91AY&SY0\255\317\025\000\000\005\177\372D\010 \000 \201\240\330\224\201\\\000\277\357\377\340\000@@@@@\000@@@0\000\315[\rS\325=\224\321114\332@\032\001\240\006\323(5M\032'\222i\264\r\021\204h0\000\t\203S\010\325\017Q\352\000d\000\000\001\3524:\300\363q\243\337\037k\355\356\347\275rU\023\327L\r\207W\023\006\274Pu!p9\333A\217\304\201\026\000\225M\034\211x\315=\023\240^\027\347y\212\252\366s\026\035hM\354%mb\307*\024\250jM\r\302\354b\251d\236\271\362\2208\327c\033D0&(\224\206\306Ma\"\357*\305d\n\231\010\376)\323\001\201D\022\262\306\373\330\212\341\262\004#\004\340N\r\206\207W\340\366\312O\310UT\213Xcr\007\004\200\240!\036ZveS\032A\201\335\006\013\244\332\225\004`\207i\007l\201\000\204G\023\030\024\370\231-\251H\220\020\022\2460F\354\210S+\333ov\030:ON\360\377\342\356H\247\n\022\006\025\271\342\240";
-    PyObject *data = __Pyx_DecompressString(cstring, 292, 2);
+    const struct { const unsigned int length: 5; } index[] = {{1},{1},{22},{5},{20},{5},{18},{4},{5},{18},{7},{5},{8},{8},{14},{13},{11},{5},{8},{9},{10},{8},{7},{3},{12},{12},{10},{8},{9},{6},{10},{26}};
+    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (284 bytes) */
+const char* const cstring = "BZh91AY&SY\264\362)\346\000\000\005\177\366D\010 \000 \201\240\300\224\221P\000\277\357\377\340\000@@@@@\000@@@0\000\315Pj\236\243\312256\211\247\222\214&\004h\007\265=\252\030\000\0324\320\006M\001\240\310\r\001\240F\250z\215\000\014\232\000\000z\215\023\330\024\346h\252\337\2158w\232\332\254\311\213g\246\272$@\222\232;\020\367\007|\236c\374\220T\321\006\314\212J\270Q\027\321\224O\303|\3571e\236\322b\341^\023\203\212/\264\235(\314\253^I\234\274w\264d\353\237\007\353 m\2638\370\302\272\022\226T\207\030\352\314\222\311\024\004\010\027\255\342_\216zb20\212\332ic\203\231\340GP\246\200\310\031\007\313\240\255\362\203\324p\245\222\214\364\216\3346`7\003\001\357\366v<)\206\330\006\006\342\030\022\014\320\336U\223\\\366\336A\000\2545\221\210\251Y\027rLE\300\200rZ\010\326\364-U\177u\224\3475\273\356\305\362.\344\212p\241!i\344S\314";
+    PyObject *data = __Pyx_DecompressString(cstring, 284, 2);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (242 bytes) */
-const char* const cstring = "x\332=O\261N\303@\014e`c\312'0\261\245b\002\301\200\204*\261\241\212\262[\216\3436\247\\\356\256\261\257$\177\300\330\221\221\221O\34032\3629\270)b\260\375\374\244\367\374\\>HO\013\032\265\211a\021x\213\035\016e\032\207\307\210}\r\260\032\007\253\245#\205g\036\364\2057\350S\203(c \027K\212}\314\352\002K\305\212\325QC\336Vp\001\264G\342\n\251\245\221\032\026\2519i\303{\364\220D\00169\020\300\226\025\272\270g\001\357\214u\002\377\226\206\315\305\244\324:\345N\000:4\302z\313\263\306`\254\263\267\t\020\260\263\371\227?\305\004\260\313\350O,\200\330\225\0236T\333\017\331[\002\345c\216\034\3528\333Y\262\314\362\326\330\261y\237\316\212\251\270\373\276\234\356\327\323\372\365\347\374\342\375\366p}x\372\270\371\274\372*~\001\0376}\210";
-    PyObject *data = __Pyx_DecompressString(cstring, 242, 1);
+    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (236 bytes) */
+const char* const cstring = "x\332=O;N\304P\014\244\240\243\312\021\250\350\262\242\"\035\022BB\242@\210\013X\216\343\335<\345\375\210\375\226\344\006\224[RRr\024\312\224\034\007o\026Q\330\036\2174\343q}+#mh\326>\305M\344\035\006\234\352<Ow\t\307\016\340y\236\254\356\035)<\361\244/\274E\237{D\231#\271TS\032SQ\027YZVl\217\032\362\266\202\213\240#\022\267H\003\315\324\263H\307Y{\336\243\207,\n\260-\221\000v\254\020\322\236\005\2743\326\t\374[\0326\027\223\322\340\224\203\000\0044\302\372\300\253\306`\352\212\267\t\0201\330\374\313\237S\006x-\350O,\200\330\225\0236\324\331\017\305[\002\345c\216\022\273\264\332Y\262\302\362\326\333\261u_\316\252\245j\226\346\361\373\362\347\374\342\2759\\\037\036>n>\257\276\252_\242h|\023";
+    PyObject *data = __Pyx_DecompressString(cstring, 236, 1);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #else /* compression: none (311 bytes) */
-const char* const bytes = ".?src/cython/negamax.pyxBoard__Pyx_PyDict_NextRefalphaasyncio.coroutinesbetaboardcline_in_tracebackcychessdeptheval_pst__func__get_moves_list_is_coroutineis_in_checkitems__main__make_move__module____name__negamaxpop__qualname____set_name__setdefault__test__undo_movevalueswhite_move\320\000\021\320\021:\270!\320;S\320ST\330\004\013\2108\2201\220G\2307\240'\250\021";
+    #else /* compression: none (308 bytes) */
+const char* const bytes = ".?src/cython/negamax.pyxBoard__Pyx_PyDict_NextRefalphaasyncio.coroutinesbetaboardcline_in_tracebackcychessdeptheval_pst__func__get_moves_list_is_coroutineis_in_checkitems__main__make_move__module____name__negamaxpop__qualname____set_name__setdefault__test__undo_movevalueswhite_move\320\000\021\320\0218\3208J\310!\330\004\013\2108\2201\220G\2307\240'\250\021";
     PyObject *data = NULL;
     CYTHON_UNUSED_VAR(__Pyx_DecompressString);
     #endif
@@ -3653,6 +3672,26 @@ const char* const bytes = ".?src/cython/negamax.pyxBoard__Pyx_PyDict_NextRefalph
     }
     #endif
   }
+  {
+    PyObject **numbertab = __pyx_mstate->__pyx_number_tab + 0;
+    int16_t const cint_constants_2[] = {-10000,10000};
+    for (int i = 0; i < 2; i++) {
+      numbertab[i] = PyLong_FromLong(cint_constants_2[i - 0]);
+      if (unlikely(!numbertab[i])) __PYX_ERR(0, 1, __pyx_L1_error)
+    }
+  }
+  #if CYTHON_IMMORTAL_CONSTANTS
+  {
+    PyObject **table = __pyx_mstate->__pyx_number_tab;
+    for (Py_ssize_t i=0; i<2; ++i) {
+      #if CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
+      Py_SET_REFCNT(table[i], _Py_IMMORTAL_REFCNT_LOCAL);
+      #else
+      Py_SET_REFCNT(table[i], _Py_IMMORTAL_INITIAL_REFCNT);
+      #endif
+    }
+  }
+  #endif
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -3683,7 +3722,7 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
   {
     const __Pyx_PyCode_New_function_description descr = {4, 0, 0, 4, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 17};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_board, __pyx_mstate->__pyx_n_u_depth, __pyx_mstate->__pyx_n_u_alpha, __pyx_mstate->__pyx_n_u_beta};
-    __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_cython_negamax_pyx, __pyx_mstate->__pyx_n_u_negamax, __pyx_mstate->__pyx_kp_b_iso88591_SST_81G7, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_cython_negamax_pyx, __pyx_mstate->__pyx_n_u_negamax, __pyx_mstate->__pyx_kp_b_iso88591_88J_81G7, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
   }
   Py_DECREF(tuple_dedup_map);
   return 0;
@@ -5208,7 +5247,7 @@ static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name) {
         if (unlikely(!module_name_str)) { goto modbad; }
         module_name = PyUnicode_FromString(module_name_str);
         if (unlikely(!module_name)) { goto modbad; }
-        module_dot = PyUnicode_Concat(module_name, __pyx_mstate_global->__pyx_kp_u__3);
+        module_dot = PyUnicode_Concat(module_name, __pyx_mstate_global->__pyx_kp_u_);
         if (unlikely(!module_dot)) { goto modbad; }
         full_name = PyUnicode_Concat(module_dot, name);
         if (unlikely(!full_name)) { goto modbad; }
@@ -7568,7 +7607,7 @@ __Pyx_PyType_GetFullyQualifiedName(PyTypeObject* tp)
         result = name;
         name = NULL;
     } else {
-        result = __Pyx_NewRef(__pyx_mstate_global->__pyx_kp_u__4);
+        result = __Pyx_NewRef(__pyx_mstate_global->__pyx_kp_u__2);
     }
     goto done;
 }

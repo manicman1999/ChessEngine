@@ -22,12 +22,6 @@ class PstEngine(ChessEngineBase):
         legal_moves = board.get_moves_list()
         legal_move_strs = [f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}" for move in legal_moves]
 
-        if board.is_in_check():
-            pseudolegals = board.get_pseudo_legals()
-            pseudolegal_move_strs = [f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}" for move in pseudolegals]
-            board.print_board()
-            pass
-
         start_time = time.time()
 
         start_pst = board.eval_pst()
@@ -38,7 +32,7 @@ class PstEngine(ChessEngineBase):
                 results.append(negamax(board, self.depth - 1))
                 board.pop()
             else:
-                results.append(0)
+                results.append(8000)
 
         best_move = None
         best_score = -inf
@@ -47,13 +41,15 @@ class PstEngine(ChessEngineBase):
         for move, score in zip(legal_moves, results):
             total_evals += 0
 
-            if board.white_move():
-                score *= -1
+            score *= -1
 
             if score > best_score:
                 best_score = score
                 best_move = move
                 best_move_str = f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}"
+
+            if not board.white_move():
+                pass
 
         total_time = time.time() - start_time
         print(f"{total_evals} evals in {total_time:.4f}s.")

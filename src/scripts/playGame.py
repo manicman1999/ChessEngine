@@ -36,11 +36,25 @@ async def run_game(
     white_engine: ChessEngineBase,
     black_engine: ChessEngineBase,
     max_fullmoves: int = 200,
+    rand_moves: int = 4,
 ) -> dict[str, str]:
     board = Board()
     board.set_start_position()
 
-    moves_history = []  # List of alg strs like 'e2e4'
+    moves_history = []
+
+    randy = RandomEngine()
+    for _ in range(rand_moves):
+        move_str = randy.choose_move(board)
+        if move_str is None:
+            break
+        fr, to, promo = parse_move_alg(move_str)
+        succ = board.make_move(fr, to, promo)
+        if not succ:
+            print(f"Invalid move attempted: {move_str}")
+            break
+        moves_history.append(move_str)
+
     while len(moves_history) // 2 <= max_fullmoves:
         result = board.game_result()
         if result is not None:

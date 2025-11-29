@@ -457,21 +457,38 @@ cdef class Board:
                     if (target_bb & own_occ) == 0:
                         self.add_move(king_sq, target, 0)
 
-        # Castling (pseudo: rights + path empty)
+        # Castling (pseudo: rights + path empty + not in check + path/dest safe)
+        cdef bint in_check = self._is_in_check()
+        if in_check:
+            return self.move_count  # No castling if in check; normal moves already added
+
         cdef uint8_t rights = self.castling
+        cdef bint path_empty, dest_safe, inter_safe
         if side == 0:  # White
-            # KS
-            if (rights & CASTLE_WK) and king_sq == 4 and (self.occupancy[2] & (sq_to_bit(5) | sq_to_bit(6))) == 0:
+            # KS: path f1=5,g1=6 empty; check attacks on 5,6 by black
+            path_empty = (self.occupancy[2] & (sq_to_bit(5) | sq_to_bit(6))) == 0
+            dest_safe = (not self.square_attacked(6, False))  # g1 by black
+            inter_safe = (not self.square_attacked(5, False))  # f1 by black
+            if (rights & CASTLE_WK) and king_sq == 4 and path_empty and dest_safe and inter_safe:
                 self.add_move(4, 6, 0)
-            # QS
-            if (rights & CASTLE_WQ) and king_sq == 4 and (self.occupancy[2] & (sq_to_bit(1) | sq_to_bit(2))) == 0:
+            # QS: path b1=1,c1=2,d1=3 empty; check attacks on 3,2 by black (d1,c1)
+            path_empty = (self.occupancy[2] & (sq_to_bit(1) | sq_to_bit(2) | sq_to_bit(3))) == 0
+            dest_safe = (not self.square_attacked(2, False))  # c1 by black
+            inter_safe = (not self.square_attacked(3, False))  # d1 by black
+            if (rights & CASTLE_WQ) and king_sq == 4 and path_empty and dest_safe and inter_safe:
                 self.add_move(4, 2, 0)
         else:  # Black
-            # KS
-            if (rights & CASTLE_BK) and king_sq == 60 and (self.occupancy[2] & (sq_to_bit(61) | sq_to_bit(62))) == 0:
+            # KS: path f8=61,g8=62 empty; check attacks on 61,62 by white
+            path_empty = (self.occupancy[2] & (sq_to_bit(61) | sq_to_bit(62))) == 0
+            dest_safe = (not self.square_attacked(62, True))  # g8 by white
+            inter_safe = (not self.square_attacked(61, True))  # f8 by white
+            if (rights & CASTLE_BK) and king_sq == 60 and path_empty and dest_safe and inter_safe:
                 self.add_move(60, 62, 0)
-            # QS
-            if (rights & CASTLE_BQ) and king_sq == 60 and (self.occupancy[2] & (sq_to_bit(58) | sq_to_bit(59))) == 0:
+            # QS: path b8=57,c8=58,d8=59 empty; check attacks on 59,58 by white (d8,c8)
+            path_empty = (self.occupancy[2] & (sq_to_bit(57) | sq_to_bit(58) | sq_to_bit(59))) == 0
+            dest_safe = (not self.square_attacked(58, True))  # c8 by white
+            inter_safe = (not self.square_attacked(59, True))  # d8 by white
+            if (rights & CASTLE_BQ) and king_sq == 60 and path_empty and dest_safe and inter_safe:
                 self.add_move(60, 58, 0)
 
         return self.move_count

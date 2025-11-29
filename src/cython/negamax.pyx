@@ -21,7 +21,7 @@ cdef int _negamax(object board, int depth, double alpha, double beta):
     if depth == 0:
         return board.eval_pst()
 
-    cdef int max_score = -8000
+    cdef int max_score = -9999  # Safer bound (covers full material)
     cdef int i
     cdef object move
     cdef list moves = board.get_moves_list()
@@ -30,16 +30,17 @@ cdef int _negamax(object board, int depth, double alpha, double beta):
     if len(moves) == 0:
         if board.is_in_check():
             if board.white_move():
-                return 8000
-            return -8000
-        return 0
+                return -8000  # White to move + checkmate = white loses (bad for white)
+            else:
+                return 8000   # Black to move + checkmate = black loses (good for white)
+        return 0  # Stalemate
 
     for move in moves:
         if board.make_move(move[0], move[1], move[2]):
             score = _negamax(board, depth - 1, -beta, -alpha)
             board.undo_move()
         else:
-            score = 0
+            score = 0  # Shouldn't happen for legal moves
 
         score = -score
         if score > max_score:
