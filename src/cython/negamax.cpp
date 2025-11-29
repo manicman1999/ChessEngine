@@ -2308,7 +2308,7 @@ typedef struct {
   double __pyx_k_;
   double __pyx_k__2;
   PyObject *__pyx_codeobj_tab[1];
-  PyObject *__pyx_string_tab[30];
+  PyObject *__pyx_string_tab[32];
 /* #### Code section: module_state_contents ### */
 /* CommonTypesMetaclass.module_state_decls */
 PyTypeObject *__pyx_CommonTypesMetaclassType;
@@ -2365,20 +2365,22 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 #define __pyx_n_u_func __pyx_string_tab[13]
 #define __pyx_n_u_get_moves_list __pyx_string_tab[14]
 #define __pyx_n_u_is_coroutine __pyx_string_tab[15]
-#define __pyx_n_u_items __pyx_string_tab[16]
-#define __pyx_n_u_main __pyx_string_tab[17]
-#define __pyx_n_u_make_move __pyx_string_tab[18]
-#define __pyx_n_u_module __pyx_string_tab[19]
-#define __pyx_n_u_name __pyx_string_tab[20]
-#define __pyx_n_u_negamax __pyx_string_tab[21]
-#define __pyx_n_u_pop __pyx_string_tab[22]
-#define __pyx_n_u_qualname __pyx_string_tab[23]
-#define __pyx_n_u_set_name __pyx_string_tab[24]
-#define __pyx_n_u_setdefault __pyx_string_tab[25]
-#define __pyx_n_u_test __pyx_string_tab[26]
-#define __pyx_n_u_undo_move __pyx_string_tab[27]
-#define __pyx_n_u_values __pyx_string_tab[28]
-#define __pyx_kp_b_iso88591_SST_81G7 __pyx_string_tab[29]
+#define __pyx_n_u_is_in_check __pyx_string_tab[16]
+#define __pyx_n_u_items __pyx_string_tab[17]
+#define __pyx_n_u_main __pyx_string_tab[18]
+#define __pyx_n_u_make_move __pyx_string_tab[19]
+#define __pyx_n_u_module __pyx_string_tab[20]
+#define __pyx_n_u_name __pyx_string_tab[21]
+#define __pyx_n_u_negamax __pyx_string_tab[22]
+#define __pyx_n_u_pop __pyx_string_tab[23]
+#define __pyx_n_u_qualname __pyx_string_tab[24]
+#define __pyx_n_u_set_name __pyx_string_tab[25]
+#define __pyx_n_u_setdefault __pyx_string_tab[26]
+#define __pyx_n_u_test __pyx_string_tab[27]
+#define __pyx_n_u_undo_move __pyx_string_tab[28]
+#define __pyx_n_u_values __pyx_string_tab[29]
+#define __pyx_n_u_white_move __pyx_string_tab[30]
+#define __pyx_kp_b_iso88591_SST_81G7 __pyx_string_tab[31]
 /* #### Code section: module_state_clear ### */
 #if CYTHON_USE_MODULE_STATE
 static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
@@ -2394,7 +2396,7 @@ static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
   __Pyx_State_RemoveModule(NULL);
   #endif
   for (int i=0; i<1; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<30; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<32; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
 /* #### Code section: module_state_clear_contents ### */
 /* CommonTypesMetaclass.module_state_clear */
 Py_CLEAR(clear_module_state->__pyx_CommonTypesMetaclassType);
@@ -2418,7 +2420,7 @@ static CYTHON_SMALL_CODE int __pyx_m_traverse(PyObject *m, visitproc visit, void
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_bytes);
   __Pyx_VISIT_CONST(traverse_module_state->__pyx_empty_unicode);
   for (int i=0; i<1; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<30; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<32; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
 /* #### Code section: module_state_traverse_contents ### */
 /* CommonTypesMetaclass.module_state_traverse */
 Py_VISIT(traverse_module_state->__pyx_CommonTypesMetaclassType);
@@ -2693,7 +2695,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
  *     if depth == 0:
  *         return board.eval_pst()             # <<<<<<<<<<<<<<
  * 
- *     cdef int max_score = -<int>INFINITY
+ *     cdef int max_score = -8000
 */
     __pyx_t_3 = __pyx_v_board;
     __Pyx_INCREF(__pyx_t_3);
@@ -2722,18 +2724,18 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
   /* "negamax.pyx":24
  *         return board.eval_pst()
  * 
- *     cdef int max_score = -<int>INFINITY             # <<<<<<<<<<<<<<
+ *     cdef int max_score = -8000             # <<<<<<<<<<<<<<
  *     cdef int i
  *     cdef object move
 */
-  __pyx_v_max_score = (-((int)INFINITY));
+  __pyx_v_max_score = -8000;
 
   /* "negamax.pyx":27
  *     cdef int i
  *     cdef object move
  *     cdef list moves = board.get_moves_list()             # <<<<<<<<<<<<<<
  *     cdef int score
- *     for move in moves:
+ * 
 */
   __pyx_t_3 = __pyx_v_board;
   __Pyx_INCREF(__pyx_t_3);
@@ -2749,16 +2751,130 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
   __pyx_v_moves = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "negamax.pyx":29
- *     cdef list moves = board.get_moves_list()
+  /* "negamax.pyx":30
  *     cdef int score
+ * 
+ *     if len(moves) == 0:             # <<<<<<<<<<<<<<
+ *         if board.is_in_check():
+ *             if board.white_move():
+*/
+  if (unlikely(__pyx_v_moves == Py_None)) {
+    PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
+    __PYX_ERR(0, 30, __pyx_L1_error)
+  }
+  __pyx_t_6 = __Pyx_PyList_GET_SIZE(__pyx_v_moves); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 30, __pyx_L1_error)
+  __pyx_t_1 = (__pyx_t_6 == 0);
+  if (__pyx_t_1) {
+
+    /* "negamax.pyx":31
+ * 
+ *     if len(moves) == 0:
+ *         if board.is_in_check():             # <<<<<<<<<<<<<<
+ *             if board.white_move():
+ *                 return -8000
+*/
+    __pyx_t_3 = __pyx_v_board;
+    __Pyx_INCREF(__pyx_t_3);
+    __pyx_t_4 = 0;
+    {
+      PyObject *__pyx_callargs[2] = {__pyx_t_3, NULL};
+      __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_is_in_check, __pyx_callargs+__pyx_t_4, (1-__pyx_t_4) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+      __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 31, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+    }
+    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 31, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    if (__pyx_t_1) {
+
+      /* "negamax.pyx":32
+ *     if len(moves) == 0:
+ *         if board.is_in_check():
+ *             if board.white_move():             # <<<<<<<<<<<<<<
+ *                 return -8000
+ *             return 8000
+*/
+      __pyx_t_3 = __pyx_v_board;
+      __Pyx_INCREF(__pyx_t_3);
+      __pyx_t_4 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_3, NULL};
+        __pyx_t_2 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_white_move, __pyx_callargs+__pyx_t_4, (1-__pyx_t_4) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+        if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 32, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_2);
+      }
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 32, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      if (__pyx_t_1) {
+
+        /* "negamax.pyx":33
+ *         if board.is_in_check():
+ *             if board.white_move():
+ *                 return -8000             # <<<<<<<<<<<<<<
+ *             return 8000
+ *         return 0
+*/
+        __pyx_r = -8000;
+        goto __pyx_L0;
+
+        /* "negamax.pyx":32
+ *     if len(moves) == 0:
+ *         if board.is_in_check():
+ *             if board.white_move():             # <<<<<<<<<<<<<<
+ *                 return -8000
+ *             return 8000
+*/
+      }
+
+      /* "negamax.pyx":34
+ *             if board.white_move():
+ *                 return -8000
+ *             return 8000             # <<<<<<<<<<<<<<
+ *         return 0
+ * 
+*/
+      __pyx_r = 0x1F40;
+      goto __pyx_L0;
+
+      /* "negamax.pyx":31
+ * 
+ *     if len(moves) == 0:
+ *         if board.is_in_check():             # <<<<<<<<<<<<<<
+ *             if board.white_move():
+ *                 return -8000
+*/
+    }
+
+    /* "negamax.pyx":35
+ *                 return -8000
+ *             return 8000
+ *         return 0             # <<<<<<<<<<<<<<
+ * 
+ *     for move in moves:
+*/
+    __pyx_r = 0;
+    goto __pyx_L0;
+
+    /* "negamax.pyx":30
+ *     cdef int score
+ * 
+ *     if len(moves) == 0:             # <<<<<<<<<<<<<<
+ *         if board.is_in_check():
+ *             if board.white_move():
+*/
+  }
+
+  /* "negamax.pyx":37
+ *         return 0
+ * 
  *     for move in moves:             # <<<<<<<<<<<<<<
- *         board.make_move(move[0], move[1], move[2])
- *         score = _negamax(board, depth - 1, -beta, -alpha)
+ *         if board.make_move(move[0], move[1], move[2]):
+ *             score = _negamax(board, depth - 1, -beta, -alpha)
 */
   if (unlikely(__pyx_v_moves == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    __PYX_ERR(0, 29, __pyx_L1_error)
+    __PYX_ERR(0, 37, __pyx_L1_error)
   }
   __pyx_t_2 = __pyx_v_moves; __Pyx_INCREF(__pyx_t_2);
   __pyx_t_6 = 0;
@@ -2766,31 +2882,31 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
     {
       Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_2);
       #if !CYTHON_ASSUME_SAFE_SIZE
-      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 29, __pyx_L1_error)
+      if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 37, __pyx_L1_error)
       #endif
       if (__pyx_t_6 >= __pyx_temp) break;
     }
     __pyx_t_3 = __Pyx_PyList_GetItemRefFast(__pyx_t_2, __pyx_t_6, __Pyx_ReferenceSharing_OwnStrongReference);
     ++__pyx_t_6;
-    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 29, __pyx_L1_error)
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 37, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_XDECREF_SET(__pyx_v_move, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "negamax.pyx":30
- *     cdef int score
+    /* "negamax.pyx":38
+ * 
  *     for move in moves:
- *         board.make_move(move[0], move[1], move[2])             # <<<<<<<<<<<<<<
- *         score = _negamax(board, depth - 1, -beta, -alpha)
- *         board.undo_move()
+ *         if board.make_move(move[0], move[1], move[2]):             # <<<<<<<<<<<<<<
+ *             score = _negamax(board, depth - 1, -beta, -alpha)
+ *             board.undo_move()
 */
     __pyx_t_7 = __pyx_v_board;
     __Pyx_INCREF(__pyx_t_7);
-    __pyx_t_8 = __Pyx_GetItemInt(__pyx_v_move, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 30, __pyx_L1_error)
+    __pyx_t_8 = __Pyx_GetItemInt(__pyx_v_move, 0, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 38, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_9 = __Pyx_GetItemInt(__pyx_v_move, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 30, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_GetItemInt(__pyx_v_move, 1, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 38, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_10 = __Pyx_GetItemInt(__pyx_v_move, 2, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 30, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_GetItemInt(__pyx_v_move, 2, long, 1, __Pyx_PyLong_From_long, 0, 0, 0, 1, __Pyx_ReferenceSharing_OwnStrongReference); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 38, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
     __pyx_t_4 = 0;
     {
@@ -2800,42 +2916,66 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 30, __pyx_L1_error)
+      if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 38, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
     }
+    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 38, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    if (__pyx_t_1) {
 
-    /* "negamax.pyx":31
+      /* "negamax.pyx":39
  *     for move in moves:
- *         board.make_move(move[0], move[1], move[2])
- *         score = _negamax(board, depth - 1, -beta, -alpha)             # <<<<<<<<<<<<<<
- *         board.undo_move()
- * 
+ *         if board.make_move(move[0], move[1], move[2]):
+ *             score = _negamax(board, depth - 1, -beta, -alpha)             # <<<<<<<<<<<<<<
+ *             board.undo_move()
+ *         else:
 */
-    __pyx_t_5 = __pyx_f_7negamax__negamax(__pyx_v_board, (__pyx_v_depth - 1), (-__pyx_v_beta), (-__pyx_v_alpha)); if (unlikely(__pyx_t_5 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 31, __pyx_L1_error)
-    __pyx_v_score = __pyx_t_5;
+      __pyx_t_5 = __pyx_f_7negamax__negamax(__pyx_v_board, (__pyx_v_depth - 1), (-__pyx_v_beta), (-__pyx_v_alpha)); if (unlikely(__pyx_t_5 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 39, __pyx_L1_error)
+      __pyx_v_score = __pyx_t_5;
 
-    /* "negamax.pyx":32
- *         board.make_move(move[0], move[1], move[2])
- *         score = _negamax(board, depth - 1, -beta, -alpha)
- *         board.undo_move()             # <<<<<<<<<<<<<<
+      /* "negamax.pyx":40
+ *         if board.make_move(move[0], move[1], move[2]):
+ *             score = _negamax(board, depth - 1, -beta, -alpha)
+ *             board.undo_move()             # <<<<<<<<<<<<<<
+ *         else:
+ *             score = 0
+*/
+      __pyx_t_10 = __pyx_v_board;
+      __Pyx_INCREF(__pyx_t_10);
+      __pyx_t_4 = 0;
+      {
+        PyObject *__pyx_callargs[2] = {__pyx_t_10, NULL};
+        __pyx_t_3 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_undo_move, __pyx_callargs+__pyx_t_4, (1-__pyx_t_4) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+        __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 40, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+      }
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+
+      /* "negamax.pyx":38
+ * 
+ *     for move in moves:
+ *         if board.make_move(move[0], move[1], move[2]):             # <<<<<<<<<<<<<<
+ *             score = _negamax(board, depth - 1, -beta, -alpha)
+ *             board.undo_move()
+*/
+      goto __pyx_L9;
+    }
+
+    /* "negamax.pyx":42
+ *             board.undo_move()
+ *         else:
+ *             score = 0             # <<<<<<<<<<<<<<
  * 
  *         score = -score
 */
-    __pyx_t_10 = __pyx_v_board;
-    __Pyx_INCREF(__pyx_t_10);
-    __pyx_t_4 = 0;
-    {
-      PyObject *__pyx_callargs[2] = {__pyx_t_10, NULL};
-      __pyx_t_3 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_undo_move, __pyx_callargs+__pyx_t_4, (1-__pyx_t_4) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
-      __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
-      if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 32, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
+    /*else*/ {
+      __pyx_v_score = 0;
     }
-    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_L9:;
 
-    /* "negamax.pyx":34
- *         board.undo_move()
+    /* "negamax.pyx":44
+ *             score = 0
  * 
  *         score = -score             # <<<<<<<<<<<<<<
  *         if score > max_score:
@@ -2843,7 +2983,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
     __pyx_v_score = (-__pyx_v_score);
 
-    /* "negamax.pyx":35
+    /* "negamax.pyx":45
  * 
  *         score = -score
  *         if score > max_score:             # <<<<<<<<<<<<<<
@@ -2853,7 +2993,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
     __pyx_t_1 = (__pyx_v_score > __pyx_v_max_score);
     if (__pyx_t_1) {
 
-      /* "negamax.pyx":36
+      /* "negamax.pyx":46
  *         score = -score
  *         if score > max_score:
  *             max_score = score             # <<<<<<<<<<<<<<
@@ -2862,7 +3002,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
       __pyx_v_max_score = __pyx_v_score;
 
-      /* "negamax.pyx":35
+      /* "negamax.pyx":45
  * 
  *         score = -score
  *         if score > max_score:             # <<<<<<<<<<<<<<
@@ -2871,7 +3011,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
     }
 
-    /* "negamax.pyx":37
+    /* "negamax.pyx":47
  *         if score > max_score:
  *             max_score = score
  *         if score > alpha:             # <<<<<<<<<<<<<<
@@ -2881,7 +3021,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
     __pyx_t_1 = (__pyx_v_score > __pyx_v_alpha);
     if (__pyx_t_1) {
 
-      /* "negamax.pyx":38
+      /* "negamax.pyx":48
  *             max_score = score
  *         if score > alpha:
  *             alpha = <double>score             # <<<<<<<<<<<<<<
@@ -2890,7 +3030,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
       __pyx_v_alpha = ((double)__pyx_v_score);
 
-      /* "negamax.pyx":37
+      /* "negamax.pyx":47
  *         if score > max_score:
  *             max_score = score
  *         if score > alpha:             # <<<<<<<<<<<<<<
@@ -2899,7 +3039,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
     }
 
-    /* "negamax.pyx":39
+    /* "negamax.pyx":49
  *         if score > alpha:
  *             alpha = <double>score
  *         if alpha >= beta:             # <<<<<<<<<<<<<<
@@ -2909,16 +3049,16 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
     __pyx_t_1 = (__pyx_v_alpha >= __pyx_v_beta);
     if (__pyx_t_1) {
 
-      /* "negamax.pyx":40
+      /* "negamax.pyx":50
  *             alpha = <double>score
  *         if alpha >= beta:
  *             break             # <<<<<<<<<<<<<<
  * 
  *     return max_score
 */
-      goto __pyx_L5_break;
+      goto __pyx_L8_break;
 
-      /* "negamax.pyx":39
+      /* "negamax.pyx":49
  *         if score > alpha:
  *             alpha = <double>score
  *         if alpha >= beta:             # <<<<<<<<<<<<<<
@@ -2927,22 +3067,22 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
 */
     }
 
-    /* "negamax.pyx":29
- *     cdef list moves = board.get_moves_list()
- *     cdef int score
+    /* "negamax.pyx":37
+ *         return 0
+ * 
  *     for move in moves:             # <<<<<<<<<<<<<<
- *         board.make_move(move[0], move[1], move[2])
- *         score = _negamax(board, depth - 1, -beta, -alpha)
+ *         if board.make_move(move[0], move[1], move[2]):
+ *             score = _negamax(board, depth - 1, -beta, -alpha)
 */
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  goto __pyx_L9_for_end;
-  __pyx_L5_break:;
+  goto __pyx_L13_for_end;
+  __pyx_L8_break:;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  goto __pyx_L9_for_end;
-  __pyx_L9_for_end:;
+  goto __pyx_L13_for_end;
+  __pyx_L13_for_end:;
 
-  /* "negamax.pyx":42
+  /* "negamax.pyx":52
  *             break
  * 
  *     return max_score             # <<<<<<<<<<<<<<
@@ -3449,23 +3589,31 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
 static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
-    const struct { const unsigned int length: 5; } index[] = {{1},{1},{22},{5},{20},{5},{18},{4},{5},{18},{7},{5},{8},{8},{14},{13},{5},{8},{9},{10},{8},{7},{3},{12},{12},{10},{8},{9},{6},{29}};
-    #if (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (230 bytes) */
-const char* const cstring = "x\332=N;N\003Q\014\244\240\243\332#P\321mD\005\202\002\t!\321!D\350-\257\237\223}\312\373\261\366\213vo@\231\222\222\222#p\214-9\016N\202(l\217G\366\314\264w2\320\202&\355sZ$^c\304\261-\323x\237qp\000\317\323h\365\340I\341\211G}\341\025\206\322#\312\224\310\347\226\362\220\253\372\304\322\261b\267\377\241`+\370\004: q\207\264\241\211z\026q\\\264\347-\006(\242\000\253\232\010`\315\n1oY xc\275\300\277\244W\216\002\020\321\264\254o\370ph0\273\032l\002$\2146\377B\227\\\000\336*\206#\013 &}\304\206\234\005\257\301l\225\367\3465\271|\220\2638\225e>i\346\346\346\373|\276]\316\313\327\237\323\263\367\353\335\345\356\361\343\352\363\342\253\371\005 :t\342";
-    PyObject *data = __Pyx_DecompressString(cstring, 230, 1);
+    const struct { const unsigned int length: 5; } index[] = {{1},{1},{22},{5},{20},{5},{18},{4},{5},{18},{7},{5},{8},{8},{14},{13},{11},{5},{8},{9},{10},{8},{7},{3},{12},{12},{10},{8},{9},{6},{10},{29}};
+    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (292 bytes) */
+const char* const cstring = "BZh91AY&SY0\255\317\025\000\000\005\177\372D\010 \000 \201\240\330\224\201\\\000\277\357\377\340\000@@@@@\000@@@0\000\315[\rS\325=\224\321114\332@\032\001\240\006\323(5M\032'\222i\264\r\021\204h0\000\t\203S\010\325\017Q\352\000d\000\000\001\3524:\300\363q\243\337\037k\355\356\347\275rU\023\327L\r\207W\023\006\274Pu!p9\333A\217\304\201\026\000\225M\034\211x\315=\023\240^\027\347y\212\252\366s\026\035hM\354%mb\307*\024\250jM\r\302\354b\251d\236\271\362\2208\327c\033D0&(\224\206\306Ma\"\357*\305d\n\231\010\376)\323\001\201D\022\262\306\373\330\212\341\262\004#\004\340N\r\206\207W\340\366\312O\310UT\213Xcr\007\004\200\240!\036ZveS\032A\201\335\006\013\244\332\225\004`\207i\007l\201\000\204G\023\030\024\370\231-\251H\220\020\022\2460F\354\210S+\333ov\030:ON\360\377\342\356H\247\n\022\006\025\271\342\240";
+    PyObject *data = __Pyx_DecompressString(cstring, 292, 2);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #else /* compression: none (290 bytes) */
-const char* const bytes = ".?src/cython/negamax.pyxBoard__Pyx_PyDict_NextRefalphaasyncio.coroutinesbetaboardcline_in_tracebackcychessdeptheval_pst__func__get_moves_list_is_coroutineitems__main__make_move__module____name__negamaxpop__qualname____set_name__setdefault__test__undo_movevalues\320\000\021\320\021:\270!\320;S\320ST\330\004\013\2108\2201\220G\2307\240'\250\021";
+    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (242 bytes) */
+const char* const cstring = "x\332=O\261N\303@\014e`c\312'0\261\245b\002\301\200\204*\261\241\212\262[\216\3436\247\\\356\256\261\257$\177\300\330\221\221\221O\34032\3629\270)b\260\375\374\244\367\374\\>HO\013\032\265\211a\021x\213\035\016e\032\207\307\210}\r\260\032\007\253\245#\205g\036\364\2057\350S\203(c \027K\212}\314\352\002K\305\212\325QC\336Vp\001\264G\342\n\251\245\221\032\026\2519i\303{\364\220D\00169\020\300\226\025\272\270g\001\357\214u\002\377\226\206\315\305\244\324:\345N\000:4\302z\313\263\306`\254\263\267\t\020\260\263\371\227?\305\004\260\313\350O,\200\330\225\0236T\333\017\331[\002\345c\216\034\3528\333Y\262\314\362\326\330\261y\237\316\212\251\270\373\276\234\356\327\323\372\365\347\374\342\375\366p}x\372\270\371\274\372*~\001\0376}\210";
+    PyObject *data = __Pyx_DecompressString(cstring, 242, 1);
+    if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
+    const char* const bytes = __Pyx_PyBytes_AsString(data);
+    #if !CYTHON_ASSUME_SAFE_MACROS
+    if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
+    #endif
+    #else /* compression: none (311 bytes) */
+const char* const bytes = ".?src/cython/negamax.pyxBoard__Pyx_PyDict_NextRefalphaasyncio.coroutinesbetaboardcline_in_tracebackcychessdeptheval_pst__func__get_moves_list_is_coroutineis_in_checkitems__main__make_move__module____name__negamaxpop__qualname____set_name__setdefault__test__undo_movevalueswhite_move\320\000\021\320\021:\270!\320;S\320ST\330\004\013\2108\2201\220G\2307\240'\250\021";
     PyObject *data = NULL;
     CYTHON_UNUSED_VAR(__Pyx_DecompressString);
     #endif
     PyObject **stringtab = __pyx_mstate->__pyx_string_tab;
     Py_ssize_t pos = 0;
-    for (int i = 0; i < 29; i++) {
+    for (int i = 0; i < 31; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyUnicode_DecodeUTF8(bytes + pos, bytes_length, NULL);
       if (likely(string) && i >= 3) PyUnicode_InternInPlace(&string);
@@ -3476,7 +3624,7 @@ const char* const bytes = ".?src/cython/negamax.pyxBoard__Pyx_PyDict_NextRefalph
       stringtab[i] = string;
       pos += bytes_length;
     }
-    for (int i = 29; i < 30; i++) {
+    for (int i = 31; i < 32; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyBytes_FromStringAndSize(bytes + pos, bytes_length);
       stringtab[i] = string;
@@ -3487,14 +3635,14 @@ const char* const bytes = ".?src/cython/negamax.pyxBoard__Pyx_PyDict_NextRefalph
       }
     }
     Py_XDECREF(data);
-    for (Py_ssize_t i = 0; i < 30; i++) {
+    for (Py_ssize_t i = 0; i < 32; i++) {
       if (unlikely(PyObject_Hash(stringtab[i]) == -1)) {
         __PYX_ERR(0, 1, __pyx_L1_error)
       }
     }
     #if CYTHON_IMMORTAL_CONSTANTS
     {
-      PyObject **table = stringtab + 29;
+      PyObject **table = stringtab + 31;
       for (Py_ssize_t i=0; i<1; ++i) {
         #if CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
         Py_SET_REFCNT(table[i], _Py_IMMORTAL_REFCNT_LOCAL);

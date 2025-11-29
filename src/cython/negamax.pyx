@@ -21,15 +21,25 @@ cdef int _negamax(object board, int depth, double alpha, double beta):
     if depth == 0:
         return board.eval_pst()
 
-    cdef int max_score = -<int>INFINITY
+    cdef int max_score = -8000
     cdef int i
     cdef object move
     cdef list moves = board.get_moves_list()
     cdef int score
+
+    if len(moves) == 0:
+        if board.is_in_check():
+            if board.white_move():
+                return -8000
+            return 8000
+        return 0
+
     for move in moves:
-        board.make_move(move[0], move[1], move[2])
-        score = _negamax(board, depth - 1, -beta, -alpha)
-        board.undo_move()
+        if board.make_move(move[0], move[1], move[2]):
+            score = _negamax(board, depth - 1, -beta, -alpha)
+            board.undo_move()
+        else:
+            score = 0
 
         score = -score
         if score > max_score:

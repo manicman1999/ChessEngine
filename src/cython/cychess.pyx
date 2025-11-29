@@ -296,6 +296,28 @@ cdef class Board:
     cpdef uint64_t get_occupancy(self):
         return self.occupancy[2]
 
+    cdef uint8_t _get_piece_at(self, int sq) nogil:
+        """Internal: Get piece type at sq (0=none, 1-12 as defined)."""
+        if sq < 0 or sq >= 64:
+            return 255  # Invalid marker
+        cdef uint64_t bit = sq_to_bit(sq)
+        cdef int i
+        for i in range(12):
+            if self.pieces[i] & bit:
+                return <uint8_t>(i + 1)
+        return PIECE_NONE
+
+    cpdef uint8_t get_piece_at(self, int sq):
+        """Python-accessible: Get piece type at sq (0=none, 1-12; 255 if invalid sq)."""
+        return self._get_piece_at(sq)
+
+    cpdef uint8_t at_square(self, str alg):
+        """Get piece type at algebraic square (e.g., 'e7' → uint8_t 0-12; raises ValueError if invalid)."""
+        cdef int sq = alg_to_square(alg)
+        if sq == -1:
+            raise ValueError(f"Invalid algebraic square: {alg}")
+        return self.get_piece_at(sq)
+
     cdef inline int find_king_sq(self, bint is_white) nogil:
         cdef uint64_t kings_bb = self.pieces[PIECE_WK - 1 if is_white else PIECE_BK - 1]
         cdef int sq
@@ -404,10 +426,15 @@ cdef class Board:
 
     cdef int _generate_king_moves(self, uint64_t kings_bb, uint64_t own_occ, uint64_t opp_occ) nogil:
         cdef int sq, target
-        cdef uint64_t target_bb, path_mask
+        cdef uint64_t target_bb
         cdef bint is_white = self.white_to_move
         cdef uint8_t side = 0 if is_white else 1
         cdef int king_sq = -1
+        cdef int d
+        cdef int sq_rank
+        cdef int sq_file
+        cdef int tgt_rank
+        cdef int tgt_file
 
         # Find king (single)
         for sq in range(64):
@@ -415,14 +442,20 @@ cdef class Board:
                 king_sq = sq
                 break
 
+        assert king_sq != -1
+
         # Normal king moves
-        cdef int d
+        sq_rank = king_sq // 8
+        sq_file = king_sq % 8
         for d in range(8):
             target = king_sq + KING_DELTAS[d]
             if 0 <= target < 64:
-                target_bb = sq_to_bit(target)
-                if (target_bb & own_occ) == 0:
-                    self.add_move(king_sq, target, 0)
+                tgt_rank = target // 8
+                tgt_file = target % 8
+                if abs(tgt_rank - sq_rank) <= 1 and abs(tgt_file - sq_file) <= 1:
+                    target_bb = sq_to_bit(target)
+                    if (target_bb & own_occ) == 0:
+                        self.add_move(king_sq, target, 0)
 
         # Castling (pseudo: rights + path empty)
         cdef uint8_t rights = self.castling
@@ -667,6 +700,9 @@ cdef class Board:
         cdef bint attacker_white = not defender_white
         return self.square_attacked(ksq, attacker_white)
 
+    cpdef bint is_in_check(self):
+        return self._is_in_check()
+
     cdef int generate_pseudo_legal_moves(self) nogil:
         self.move_count = 0
         cdef bint is_white = self.white_to_move
@@ -718,6 +754,15 @@ cdef class Board:
 
     cpdef int generate_moves(self):
         return self.generate_legal_moves()
+
+    cpdef list get_pseudo_legals(self):
+        self.generate_pseudo_legal_moves()
+        cdef list result = []
+        cdef int i
+        for i in range(self.move_count):
+            result.append((self.moves[i].fr_sq, self.moves[i].to_sq, self.moves[i].promo))
+        self.generate_legal_moves()
+        return result
 
     cpdef list get_moves_list(self):
         self.generate_legal_moves()
@@ -913,11 +958,20 @@ cdef class Board:
         cdef uint64_t to_bit = sq_to_bit(undo.to_sq)
 
         cdef uint8_t mover_side = 0 if undo.mover_type <= 6 else 1
+        cdef uint8_t promoted_type
 
         # Clear to
-        self.pieces[undo.mover_type - 1] &= ~to_bit  # Undo promo/mover
-        self.occupancy[mover_side] &= ~to_bit
-        self.occupancy[2] &= ~to_bit
+        if undo.promo == 0:
+            # Non-promo: clear original mover at to_sq
+            self.pieces[undo.mover_type - 1] &= ~to_bit
+            self.occupancy[mover_side] &= ~to_bit
+            self.occupancy[2] &= ~to_bit
+        else:
+            # Promo: clear the promoted piece at to_sq
+            promoted_type = PROMO_PIECES[mover_side][undo.promo - 1]
+            self.pieces[promoted_type - 1] &= ~to_bit
+            self.occupancy[mover_side] &= ~to_bit
+            self.occupancy[2] &= ~to_bit
 
         # Restore cap at to
         cdef uint8_t cap_side
@@ -1111,3 +1165,49 @@ cdef class Board:
     cpdef uint64_t zobrist_hash(self):
         """Python-accessible board hash for TT/eval cache."""
         return self._zobrist_hash()
+
+    cpdef void print_board(self):
+        """Print an ASCII representation of the board (ranks 8-1 top to bottom, files a-h left to right).
+        White pieces uppercase (P,N,B,R,Q,K), black lowercase (p,n,b,r,q,k), '.' for empty, or 'X#' for invalid ptype."""
+        cdef int rank, file, sq
+        cdef uint8_t ptype
+        cdef str piece_str  # Use str instead of char for safe printing
+
+        # Print rank labels (top)
+        print("  a b c d e f g h")
+
+        for rank in range(7, -1, -1):  # Rank 7 (8) to 0 (1)
+            # Print rank number
+            print(f"{rank + 1} ", end="")
+            
+            for file in range(8):
+                sq = rank * 8 + file
+                ptype = self.get_piece_at(sq)
+                
+                if ptype == 0:
+                    piece_str = "."
+                elif 1 <= ptype <= 6:  # White pieces
+                    if ptype == 1: piece_str = "P"
+                    elif ptype == 2: piece_str = "N"
+                    elif ptype == 3: piece_str = "B"
+                    elif ptype == 4: piece_str = "R"
+                    elif ptype == 5: piece_str = "Q"
+                    elif ptype == 6: piece_str = "K"
+                    else: piece_str = f"W{ptype}?"  # Debug fallback
+                elif 7 <= ptype <= 12:  # Black pieces
+                    if ptype == 7: piece_str = "p"
+                    elif ptype == 8: piece_str = "n"
+                    elif ptype == 9: piece_str = "b"
+                    elif ptype == 10: piece_str = "r"
+                    elif ptype == 11: piece_str = "q"
+                    elif ptype == 12: piece_str = "k"
+                    else: piece_str = f"B{ptype}?"  # Debug fallback
+                else:  # Invalid (e.g., 255)
+                    piece_str = f"X{ptype}?"  # Debug fallback
+                
+                print(f"{piece_str} ", end="")
+            print(f" | {rank + 1}")
+
+        # Print file labels (bottom)
+        print("  a b c d e f g h")
+        print(f"Turn: {'White' if self.white_to_move else 'Black'} | Castling: {self.castling} | EP: {self.ep_square if self.ep_square >= 0 else 'none'} | Halfmove: {self.halfmove} | Fullmove: {self.fullmove}")

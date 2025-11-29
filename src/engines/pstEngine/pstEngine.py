@@ -14,7 +14,7 @@ class PstEngine(ChessEngineBase):
     depth: int
     eval_cache: dict[Any, int]
 
-    def __init__(self, depth: int = 5):
+    def __init__(self, depth: int = 4):
         self.depth = depth
         self.eval_cache = {}
 
@@ -22,15 +22,23 @@ class PstEngine(ChessEngineBase):
         legal_moves = board.get_moves_list()
         legal_move_strs = [f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}" for move in legal_moves]
 
+        if board.is_in_check():
+            pseudolegals = board.get_pseudo_legals()
+            pseudolegal_move_strs = [f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}" for move in pseudolegals]
+            board.print_board()
+            pass
+
         start_time = time.time()
 
         start_pst = board.eval_pst()
 
         results = []
         for move in legal_moves:
-            board.make_move(*move)
-            results.append(negamax(board, self.depth - 1))
-            board.pop()
+            if board.make_move(*move):
+                results.append(negamax(board, self.depth - 1))
+                board.pop()
+            else:
+                results.append(0)
 
         best_move = None
         best_score = -inf
@@ -39,11 +47,11 @@ class PstEngine(ChessEngineBase):
         for move, score in zip(legal_moves, results):
             total_evals += 0
 
-            # if board.white_move():
-            #     score *= -1
+            if board.white_move():
+                score *= -1
 
-            if -score > best_score:
-                best_score = -score
+            if score > best_score:
+                best_score = score
                 best_move = move
                 best_move_str = f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}"
 
