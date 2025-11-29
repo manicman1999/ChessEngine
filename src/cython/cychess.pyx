@@ -993,7 +993,7 @@ cdef class Board:
             self.occupancy[ep_side] |= ep_bit
             self.occupancy[2] |= ep_bit
 
-        # Restore castle rook
+        # Restore castle rook (fixed: correct rook_type for black)
         cdef bint is_ks
         cdef int rook_to
         cdef uint64_t rfr_bit, rto_bit
@@ -1004,22 +1004,23 @@ cdef class Board:
             rfr_bit = sq_to_bit(undo.castle_rook_fr)
             rto_bit = sq_to_bit(rook_to)
             if undo.mover_type == PIECE_WK:
-                rook_type = PIECE_WR
+                rook_type = PIECE_WR  # 4
             elif undo.mover_type == PIECE_BK:
-                rook_type = PIECE_BK
+                rook_type = PIECE_BR  # 10 (FIXED: was PIECE_BK=12)
             else:
-                rook_type = 0
+                rook_type = 0  # Invalid, skip
 
-            # Clear rook_to
-            self.pieces[rook_type - 1] &= ~rto_bit
-            self.occupancy[mover_side] &= ~rto_bit
-            self.occupancy[2] &= ~rto_bit
-            # Place at rook_fr
-            self.pieces[rook_type - 1] |= rfr_bit
-            self.occupancy[mover_side] |= rfr_bit
-            self.occupancy[2] |= rfr_bit
+            if rook_type != 0:
+                # Clear rook at rook_to (restore empty)
+                self.pieces[rook_type - 1] &= ~rto_bit
+                self.occupancy[mover_side] &= ~rto_bit
+                self.occupancy[2] &= ~rto_bit
+                # Place rook back at rook_fr
+                self.pieces[rook_type - 1] |= rfr_bit
+                self.occupancy[mover_side] |= rfr_bit
+                self.occupancy[2] |= rfr_bit
 
-        # Restore mover at fr
+        # Restore mover at fr (after rook, to avoid overlap)
         self.pieces[undo.mover_type - 1] |= fr_bit
         self.occupancy[mover_side] |= fr_bit
         self.occupancy[2] |= fr_bit

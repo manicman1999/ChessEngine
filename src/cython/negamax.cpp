@@ -2771,7 +2771,7 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
  *     if len(moves) == 0:
  *         if board.is_in_check():             # <<<<<<<<<<<<<<
  *             if board.white_move():
- *                 return -8000
+ *                 return 8000
 */
     __pyx_t_3 = __pyx_v_board;
     __Pyx_INCREF(__pyx_t_3);
@@ -2791,8 +2791,8 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
  *     if len(moves) == 0:
  *         if board.is_in_check():
  *             if board.white_move():             # <<<<<<<<<<<<<<
- *                 return -8000
- *             return 8000
+ *                 return 8000
+ *             return -8000
 */
       __pyx_t_3 = __pyx_v_board;
       __Pyx_INCREF(__pyx_t_3);
@@ -2811,30 +2811,30 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
         /* "negamax.pyx":33
  *         if board.is_in_check():
  *             if board.white_move():
- *                 return -8000             # <<<<<<<<<<<<<<
- *             return 8000
+ *                 return 8000             # <<<<<<<<<<<<<<
+ *             return -8000
  *         return 0
 */
-        __pyx_r = -8000;
+        __pyx_r = 0x1F40;
         goto __pyx_L0;
 
         /* "negamax.pyx":32
  *     if len(moves) == 0:
  *         if board.is_in_check():
  *             if board.white_move():             # <<<<<<<<<<<<<<
- *                 return -8000
- *             return 8000
+ *                 return 8000
+ *             return -8000
 */
       }
 
       /* "negamax.pyx":34
  *             if board.white_move():
- *                 return -8000
- *             return 8000             # <<<<<<<<<<<<<<
+ *                 return 8000
+ *             return -8000             # <<<<<<<<<<<<<<
  *         return 0
  * 
 */
-      __pyx_r = 0x1F40;
+      __pyx_r = -8000;
       goto __pyx_L0;
 
       /* "negamax.pyx":31
@@ -2842,13 +2842,13 @@ static int __pyx_f_7negamax__negamax(PyObject *__pyx_v_board, int __pyx_v_depth,
  *     if len(moves) == 0:
  *         if board.is_in_check():             # <<<<<<<<<<<<<<
  *             if board.white_move():
- *                 return -8000
+ *                 return 8000
 */
     }
 
     /* "negamax.pyx":35
- *                 return -8000
- *             return 8000
+ *                 return 8000
+ *             return -8000
  *         return 0             # <<<<<<<<<<<<<<
  * 
  *     for move in moves:

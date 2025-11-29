@@ -30,8 +30,8 @@ cdef int _negamax(object board, int depth, double alpha, double beta):
     if len(moves) == 0:
         if board.is_in_check():
             if board.white_move():
-                return -8000
-            return 8000
+                return 8000
+            return -8000
         return 0
 
     for move in moves:
