@@ -228,9 +228,13 @@ cdef class Board:
     cdef Move move_cache[50][256]
     cdef int move_count_cache[50]
 
+    # For remembering if moves is currently legal moves
+    cdef bint legal_valid
+
     def __cinit__(self):
         self._clear()
         self.undo_index = 0
+        self.legal_valid = False
 
     cdef void _clear(self) nogil:
         cdef int i
@@ -721,6 +725,7 @@ cdef class Board:
         return self._is_in_check()
 
     cdef int generate_pseudo_legal_moves(self) nogil:
+        self.legal_valid = False
         self.move_count = 0
         cdef bint is_white = self.white_to_move
         cdef uint64_t own_occ = self.occupancy[0 if is_white else 1]
@@ -753,7 +758,9 @@ cdef class Board:
 
         return self.move_count
 
-    cdef int generate_legal_moves(self) nogil:
+    cdef int generate_legal_moves(self, bint force = False) nogil:
+        if self.legal_valid and not force:
+            return self.move_count
         cdef int pseudo_count = self.generate_pseudo_legal_moves()
         cdef Move temp_moves[256]
         cdef int legal_count = 0
@@ -767,6 +774,7 @@ cdef class Board:
                     legal_count += 1
                 self._undo_move()
         self.move_count = legal_count
+        self.legal_valid = True
         return legal_count
 
     cpdef int generate_moves(self):
@@ -781,7 +789,7 @@ cdef class Board:
         self.generate_legal_moves()
         return result
 
-    cpdef list get_moves_list(self):
+    cpdef list _get_moves_list(self):
         self.generate_legal_moves()
         cdef list result = []
         cdef int i
@@ -789,7 +797,11 @@ cdef class Board:
             result.append((self.moves[i].fr_sq, self.moves[i].to_sq, self.moves[i].promo))
         return result
 
+    cpdef list get_moves_list(self):
+        return self._get_moves_list()
+
     cdef void _set_piece(self, int sq, uint8_t piece_type) nogil:
+        self.legal_valid = False
         if sq < 0 or sq >= 64:
             return
         cdef uint64_t bit = sq_to_bit(sq)
@@ -813,6 +825,7 @@ cdef class Board:
         return self._set_piece(sq, piece_type)
 
     cdef bint _make_move(self, uint8_t fr_sq_, uint8_t to_sq_, uint8_t promo_) nogil:
+        self.legal_valid = False
         cdef int fr_sq = fr_sq_, to_sq = to_sq_, promo = promo_
         if fr_sq < 0 or fr_sq >= 64 or to_sq < 0 or to_sq >= 64:
             return False
@@ -968,6 +981,7 @@ cdef class Board:
     cdef void _undo_move(self) nogil:
         if self.undo_index <= 0:
             return
+        self.legal_valid = False
         self.undo_index -= 1
         cdef UndoState undo = self.undo_stack[self.undo_index]
 

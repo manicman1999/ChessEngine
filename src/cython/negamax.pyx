@@ -4,50 +4,69 @@
 # cython: boundscheck=False
 # cython: wraparound=False
 # cython: initializedcheck=False
-# cython: cdivision=True
+# cdivision=True
 # cython: nonecheck=False
 # cython: overflowcheck=False
 # cython: embedsignature=True
 
 from libc.math cimport INFINITY
-from libc.stdint cimport uint16_t
+from libc.stdint cimport uint64_t
+from libcpp.unordered_map cimport unordered_map
+from libcpp cimport bool
+from math import inf  # For Python-side inf
 
 from cychess import Board
 
-cpdef int negamax(object board, int depth, int alpha = -10000, int beta = 10000):
-    return _negamax(board, depth, alpha, beta)
-
-cdef int _negamax(object board, int depth, int alpha, int beta):
-    if depth == 0:
-        return board.eval_pst()
-
-    cdef int max_score = -9999  # Safer bound (covers full material)
-    cdef int i
-    cdef object move
-    cdef list moves = board.get_moves_list()
-    cdef int score
-
-    if len(moves) == 0:
-        if board.is_in_check():
-            if board.white_move():
-                return -8000  # White to move + checkmate = white loses (bad for white)
+cdef class NegamaxSearch:
+    
+    cdef object eval_func  # Python callable: Board -> float (white-relative score)
+    cdef unordered_map[uint64_t, double] eval_cache  # Strict C++ cache: uint64_t -> double
+    
+    def __init__(self, eval_func):
+        self.eval_func = eval_func
+        # No explicit init needed for unordered_map; defaults to empty
+    
+    cpdef double search(self, object board, int depth, double alpha=-100000.0, double beta=100000.0):
+        return self._search(board, depth, alpha, beta)
+    
+    # Optional: For Python introspection (e.g., print cache size)
+    cpdef size_t get_cache_size(self):
+        return self.eval_cache.size()
+    
+    cdef double _search(self, object board, int depth, double alpha, double beta):
+        cdef uint64_t key
+        cdef double eval_score
+        if depth == 0:
+            return <double>self.eval_func(board)
+        
+        cdef list moves = board._get_moves_list()
+        if len(moves) == 0:
+            if board.is_in_check():
+                if board.white_move():
+                    return -80000.0  # White mated: bad for white
+                else:
+                    return 80000.0   # Black mated: good for white
+            return 0.0  # Stalemate
+        
+        cdef double max_score = -99999.0
+        cdef object move
+        cdef double score
+        
+        for move in moves:
+            if board.make_move(move[0], move[1], move[2]):
+                score = self._search(board, depth - 1, -beta, -alpha)
+                board.undo_move()
             else:
-                return 8000   # Black to move + checkmate = black loses (good for white)
-        return 0  # Stalemate
-
-    for move in moves:
-        if board.make_move(move[0], move[1], move[2]):
-            score = _negamax(board, depth - 1, -beta, -alpha)
-            board.undo_move()
-        else:
-            score = 0  # Shouldn't happen for legal moves
-
-        score = -score
-        if score > max_score:
-            max_score = score
-        if score > alpha:
-            alpha = score
-        if alpha >= beta:
-            break
-
-    return max_score
+                score = 0.0
+            
+            score = -score
+            if score > max_score:
+                max_score = score
+            
+            if score > alpha:
+                alpha = score
+            
+            if alpha >= beta:
+                break
+        
+        return max_score

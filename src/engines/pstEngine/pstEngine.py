@@ -3,7 +3,7 @@ import time
 from typing import Any, Optional
 from src.engines.chessEngineBase import ChessEngineBase
 from cychess import Board, square_to_alg
-from negamax import negamax
+from negamax import NegamaxSearch
 from math import inf
 
 promo_chars = ['', 'q', 'n', 'b', 'r']
@@ -12,11 +12,11 @@ promo_chars = ['', 'q', 'n', 'b', 'r']
 class PstEngine(ChessEngineBase):
 
     depth: int
-    eval_cache: dict[Any, int]
+    seacher: NegamaxSearch
 
     def __init__(self, depth: int = 4):
         self.depth = depth
-        self.eval_cache = {}
+        self.searcher = NegamaxSearch(lambda b: b.material_balance())
 
     def choose_move(self, board: Board) -> Optional[str]:
         legal_moves = board.get_moves_list()
@@ -29,7 +29,7 @@ class PstEngine(ChessEngineBase):
         results = []
         for move in legal_moves:
             if board.make_move(*move):
-                results.append(negamax(board, self.depth - 1))
+                results.append(self.searcher.search(board, self.depth - 1))
                 board.pop()
             else:
                 results.append(8000)
