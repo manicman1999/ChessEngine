@@ -269,6 +269,8 @@ cdef class Board:
     # Eval func
     cdef object eval_func
 
+    cdef int eval_count
+
     def __cinit__(self):
         self._clear()
         self.undo_index = 0
@@ -1294,6 +1296,7 @@ cdef class Board:
         cdef uint64_t key
         cdef double eval_score
         if depth == 0:
+            self.eval_count += 1
             return <double>self.eval_func(self)
         
         self.generate_legal_moves()
@@ -1324,7 +1327,11 @@ cdef class Board:
         return alpha
 
     cpdef double search(self, int depth):
+        self.eval_count = 0
         return self._search(depth, -100000.0, 100000.0)
+
+    cpdef int get_eval_count(self):
+        return self.eval_count
 
     cpdef cnp.ndarray[cnp.int32_t, ndim=1] tokenize(self):
         """

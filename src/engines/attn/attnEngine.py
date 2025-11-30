@@ -16,13 +16,13 @@ class AttnEngine(ChessEngineBase):
     depth: int
     compiled_model: AttnModelCompiled
 
-    def __init__(self, model_path: Optional[str] = None):
+    def __init__(self, model_path: Optional[str] = None, depth: int = 3):
         model = AttnModel()
         if model_path:
             model.load_state_dict(torch.load(model_path))
             
         self.compiled_model = model.attn_compile()
-        self.depth = 4
+        self.depth = depth
 
     def choose_move(self, board: Board) -> Optional[str]:
         legal_moves = board.get_moves_list()
@@ -36,12 +36,14 @@ class AttnEngine(ChessEngineBase):
             board.set_eval_func(lambda b: -self.compiled_model.forward(b.tokenize()))
 
         results = []
+        total_evals = 0
         for move in legal_moves:
             if board.make_move(*move):
                 results.append(board.search(self.depth))
                 board.pop()
+                total_evals += board.get_eval_count()
             else:
-                results.append(800000)
+                results.append(8000)
 
         best_move = None
         best_score = -inf
@@ -57,7 +59,7 @@ class AttnEngine(ChessEngineBase):
                 pass
 
         total_time = time.time() - start_time
-        print(f"{total_time:.4f}s")
+        print(f"{total_time:.4f}s ({total_evals:,} evals)")
 
         if best_move and best_move_str:
             return best_move_str
