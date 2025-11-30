@@ -1549,20 +1549,6 @@ static const char* const __pyx_f[] = {
 
 /*--- Type declarations ---*/
 struct __pyx_obj_7negamax_NegamaxSearch;
-struct __pyx_opt_args_7negamax_13NegamaxSearch_search;
-
-/* "negamax.pyx":29
- *         # No explicit init needed for unordered_map; defaults to empty
- * 
- *     cpdef double search(self, object board, int depth, double alpha=-100000.0, double beta=100000.0):             # <<<<<<<<<<<<<<
- *         return self._search(board, depth, alpha, beta)
- * 
-*/
-struct __pyx_opt_args_7negamax_13NegamaxSearch_search {
-  int __pyx_n;
-  double alpha;
-  double beta;
-};
 
 /* "negamax.pyx":20
  * from cychess import Board
@@ -1581,9 +1567,9 @@ struct __pyx_obj_7negamax_NegamaxSearch {
 
 
 struct __pyx_vtabstruct_7negamax_NegamaxSearch {
-  double (*search)(struct __pyx_obj_7negamax_NegamaxSearch *, PyObject *, int, int __pyx_skip_dispatch, struct __pyx_opt_args_7negamax_13NegamaxSearch_search *__pyx_optional_args);
+  double (*search)(struct __pyx_obj_7negamax_NegamaxSearch *, PyObject *, int, int __pyx_skip_dispatch);
   size_t (*get_cache_size)(struct __pyx_obj_7negamax_NegamaxSearch *, int __pyx_skip_dispatch);
-  double (*_search)(struct __pyx_obj_7negamax_NegamaxSearch *, PyObject *, int, double, double);
+  double (*_search)(struct __pyx_obj_7negamax_NegamaxSearch *, PyObject *, int);
 };
 static struct __pyx_vtabstruct_7negamax_NegamaxSearch *__pyx_vtabptr_7negamax_NegamaxSearch;
 /* #### Code section: utility_code_proto ### */
@@ -2492,9 +2478,9 @@ static int __Pyx_State_RemoveModule(void*);
 #define __PYX_ABI_MODULE_NAME "_cython_" CYTHON_ABI
 #define __PYX_TYPE_MODULE_PREFIX __PYX_ABI_MODULE_NAME "."
 
-static double __pyx_f_7negamax_13NegamaxSearch_search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth, int __pyx_skip_dispatch, struct __pyx_opt_args_7negamax_13NegamaxSearch_search *__pyx_optional_args); /* proto*/
+static double __pyx_f_7negamax_13NegamaxSearch_search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth, int __pyx_skip_dispatch); /* proto*/
 static size_t __pyx_f_7negamax_13NegamaxSearch_get_cache_size(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
-static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth, double __pyx_v_alpha, double __pyx_v_beta); /* proto*/
+static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth); /* proto*/
 
 /* Module declarations from "libc.math" */
 
@@ -2521,7 +2507,7 @@ int __pyx_module_is_main_negamax = 0;
 /* #### Code section: string_decls ### */
 /* #### Code section: decls ### */
 static int __pyx_pf_7negamax_13NegamaxSearch___init__(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_eval_func); /* proto */
-static PyObject *__pyx_pf_7negamax_13NegamaxSearch_2search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth, double __pyx_v_alpha, double __pyx_v_beta); /* proto */
+static PyObject *__pyx_pf_7negamax_13NegamaxSearch_2search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth); /* proto */
 static PyObject *__pyx_pf_7negamax_13NegamaxSearch_4get_cache_size(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_7negamax_13NegamaxSearch_6__reduce_cython__(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_7negamax_13NegamaxSearch_8__setstate_cython__(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v___pyx_state); /* proto */
@@ -2552,11 +2538,10 @@ typedef struct {
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_items;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_pop;
   __Pyx_CachedCFunction __pyx_umethod_PyDict_Type_values;
-  double __pyx_k_;
   PyObject *__pyx_tuple[1];
   PyObject *__pyx_codeobj_tab[5];
-  PyObject *__pyx_string_tab[72];
-  PyObject *__pyx_number_tab[2];
+  PyObject *__pyx_string_tab[70];
+  PyObject *__pyx_number_tab[1];
 /* #### Code section: module_state_contents ### */
 /* CommonTypesMetaclass.module_state_decls */
 PyTypeObject *__pyx_CommonTypesMetaclassType;
@@ -2597,9 +2582,9 @@ static __pyx_mstatetype __pyx_mstate_global_static =
 static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_static;
 #endif
 /* #### Code section: constant_name_defines ### */
-#define __pyx_kp_u_Note_that_Cython_is_deliberately __pyx_string_tab[0]
-#define __pyx_kp_u__2 __pyx_string_tab[1]
-#define __pyx_kp_u__3 __pyx_string_tab[2]
+#define __pyx_kp_u_ __pyx_string_tab[0]
+#define __pyx_kp_u_Note_that_Cython_is_deliberately __pyx_string_tab[1]
+#define __pyx_kp_u__2 __pyx_string_tab[2]
 #define __pyx_kp_u_add_note __pyx_string_tab[3]
 #define __pyx_kp_u_disable __pyx_string_tab[4]
 #define __pyx_kp_u_enable __pyx_string_tab[5]
@@ -2615,62 +2600,59 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 #define __pyx_n_u_NegamaxSearch_get_cache_size __pyx_string_tab[15]
 #define __pyx_n_u_NegamaxSearch_search __pyx_string_tab[16]
 #define __pyx_n_u_Pyx_PyDict_NextRef __pyx_string_tab[17]
-#define __pyx_n_u_alpha __pyx_string_tab[18]
-#define __pyx_n_u_asyncio_coroutines __pyx_string_tab[19]
-#define __pyx_n_u_beta __pyx_string_tab[20]
-#define __pyx_n_u_board __pyx_string_tab[21]
-#define __pyx_n_u_cline_in_traceback __pyx_string_tab[22]
-#define __pyx_n_u_cychess __pyx_string_tab[23]
-#define __pyx_n_u_depth __pyx_string_tab[24]
-#define __pyx_n_u_dict __pyx_string_tab[25]
-#define __pyx_n_u_dict_2 __pyx_string_tab[26]
-#define __pyx_n_u_eval_func __pyx_string_tab[27]
-#define __pyx_n_u_func __pyx_string_tab[28]
-#define __pyx_n_u_get_cache_size __pyx_string_tab[29]
-#define __pyx_n_u_get_moves_list __pyx_string_tab[30]
-#define __pyx_n_u_getstate __pyx_string_tab[31]
-#define __pyx_n_u_inf __pyx_string_tab[32]
-#define __pyx_n_u_is_coroutine __pyx_string_tab[33]
-#define __pyx_n_u_is_in_check __pyx_string_tab[34]
-#define __pyx_n_u_items __pyx_string_tab[35]
-#define __pyx_n_u_main __pyx_string_tab[36]
-#define __pyx_n_u_make_move __pyx_string_tab[37]
-#define __pyx_n_u_math __pyx_string_tab[38]
-#define __pyx_n_u_module __pyx_string_tab[39]
-#define __pyx_n_u_name __pyx_string_tab[40]
-#define __pyx_n_u_negamax __pyx_string_tab[41]
-#define __pyx_n_u_new __pyx_string_tab[42]
-#define __pyx_n_u_pop __pyx_string_tab[43]
-#define __pyx_n_u_pyx_checksum __pyx_string_tab[44]
-#define __pyx_n_u_pyx_result __pyx_string_tab[45]
-#define __pyx_n_u_pyx_state __pyx_string_tab[46]
-#define __pyx_n_u_pyx_type __pyx_string_tab[47]
-#define __pyx_n_u_pyx_unpickle_NegamaxSearch __pyx_string_tab[48]
-#define __pyx_n_u_pyx_vtable __pyx_string_tab[49]
-#define __pyx_n_u_qualname __pyx_string_tab[50]
-#define __pyx_n_u_reduce __pyx_string_tab[51]
-#define __pyx_n_u_reduce_cython __pyx_string_tab[52]
-#define __pyx_n_u_reduce_ex __pyx_string_tab[53]
-#define __pyx_n_u_search __pyx_string_tab[54]
-#define __pyx_n_u_self __pyx_string_tab[55]
-#define __pyx_n_u_set_name __pyx_string_tab[56]
-#define __pyx_n_u_setdefault __pyx_string_tab[57]
-#define __pyx_n_u_setstate __pyx_string_tab[58]
-#define __pyx_n_u_setstate_cython __pyx_string_tab[59]
-#define __pyx_n_u_state __pyx_string_tab[60]
-#define __pyx_n_u_test __pyx_string_tab[61]
-#define __pyx_n_u_undo_move __pyx_string_tab[62]
-#define __pyx_n_u_update __pyx_string_tab[63]
-#define __pyx_n_u_use_setstate __pyx_string_tab[64]
-#define __pyx_n_u_values __pyx_string_tab[65]
-#define __pyx_n_u_white_move __pyx_string_tab[66]
-#define __pyx_kp_b_iso88591_1F __pyx_string_tab[67]
-#define __pyx_kp_b_iso88591_A_t_e1 __pyx_string_tab[68]
-#define __pyx_kp_b_iso88591_DAE_t81G7 __pyx_string_tab[69]
-#define __pyx_kp_b_iso88591_T_d_G1F_a_vWE_Q_q_q_d_7_WA_d_7 __pyx_string_tab[70]
-#define __pyx_kp_b_iso88591_q_0_kQR_7_q0_a_1 __pyx_string_tab[71]
-#define __pyx_float_100000_0 __pyx_number_tab[0]
-#define __pyx_int_167812789 __pyx_number_tab[1]
+#define __pyx_n_u_asyncio_coroutines __pyx_string_tab[18]
+#define __pyx_n_u_board __pyx_string_tab[19]
+#define __pyx_n_u_cline_in_traceback __pyx_string_tab[20]
+#define __pyx_n_u_cychess __pyx_string_tab[21]
+#define __pyx_n_u_depth __pyx_string_tab[22]
+#define __pyx_n_u_dict __pyx_string_tab[23]
+#define __pyx_n_u_dict_2 __pyx_string_tab[24]
+#define __pyx_n_u_eval_func __pyx_string_tab[25]
+#define __pyx_n_u_func __pyx_string_tab[26]
+#define __pyx_n_u_get_cache_size __pyx_string_tab[27]
+#define __pyx_n_u_get_moves_list __pyx_string_tab[28]
+#define __pyx_n_u_getstate __pyx_string_tab[29]
+#define __pyx_n_u_inf __pyx_string_tab[30]
+#define __pyx_n_u_is_coroutine __pyx_string_tab[31]
+#define __pyx_n_u_is_in_check __pyx_string_tab[32]
+#define __pyx_n_u_items __pyx_string_tab[33]
+#define __pyx_n_u_main __pyx_string_tab[34]
+#define __pyx_n_u_make_move __pyx_string_tab[35]
+#define __pyx_n_u_math __pyx_string_tab[36]
+#define __pyx_n_u_module __pyx_string_tab[37]
+#define __pyx_n_u_name __pyx_string_tab[38]
+#define __pyx_n_u_negamax __pyx_string_tab[39]
+#define __pyx_n_u_new __pyx_string_tab[40]
+#define __pyx_n_u_pop __pyx_string_tab[41]
+#define __pyx_n_u_pyx_checksum __pyx_string_tab[42]
+#define __pyx_n_u_pyx_result __pyx_string_tab[43]
+#define __pyx_n_u_pyx_state __pyx_string_tab[44]
+#define __pyx_n_u_pyx_type __pyx_string_tab[45]
+#define __pyx_n_u_pyx_unpickle_NegamaxSearch __pyx_string_tab[46]
+#define __pyx_n_u_pyx_vtable __pyx_string_tab[47]
+#define __pyx_n_u_qualname __pyx_string_tab[48]
+#define __pyx_n_u_reduce __pyx_string_tab[49]
+#define __pyx_n_u_reduce_cython __pyx_string_tab[50]
+#define __pyx_n_u_reduce_ex __pyx_string_tab[51]
+#define __pyx_n_u_search __pyx_string_tab[52]
+#define __pyx_n_u_self __pyx_string_tab[53]
+#define __pyx_n_u_set_name __pyx_string_tab[54]
+#define __pyx_n_u_setdefault __pyx_string_tab[55]
+#define __pyx_n_u_setstate __pyx_string_tab[56]
+#define __pyx_n_u_setstate_cython __pyx_string_tab[57]
+#define __pyx_n_u_state __pyx_string_tab[58]
+#define __pyx_n_u_test __pyx_string_tab[59]
+#define __pyx_n_u_undo_move __pyx_string_tab[60]
+#define __pyx_n_u_update __pyx_string_tab[61]
+#define __pyx_n_u_use_setstate __pyx_string_tab[62]
+#define __pyx_n_u_values __pyx_string_tab[63]
+#define __pyx_n_u_white_move __pyx_string_tab[64]
+#define __pyx_kp_b_iso88591_1F __pyx_string_tab[65]
+#define __pyx_kp_b_iso88591_A_t81G1 __pyx_string_tab[66]
+#define __pyx_kp_b_iso88591_A_t_e1 __pyx_string_tab[67]
+#define __pyx_kp_b_iso88591_T_d_G1F_a_vWE_Q_q_q_d_7_WA_d_7 __pyx_string_tab[68]
+#define __pyx_kp_b_iso88591_q_0_kQR_7_q0_a_1 __pyx_string_tab[69]
+#define __pyx_int_167812789 __pyx_number_tab[0]
 /* #### Code section: module_state_clear ### */
 #if CYTHON_USE_MODULE_STATE
 static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
@@ -2689,8 +2671,8 @@ static CYTHON_SMALL_CODE int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_type_7negamax_NegamaxSearch);
   for (int i=0; i<1; ++i) { Py_CLEAR(clear_module_state->__pyx_tuple[i]); }
   for (int i=0; i<5; ++i) { Py_CLEAR(clear_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<72; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
-  for (int i=0; i<2; ++i) { Py_CLEAR(clear_module_state->__pyx_number_tab[i]); }
+  for (int i=0; i<70; ++i) { Py_CLEAR(clear_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<1; ++i) { Py_CLEAR(clear_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_clear_contents ### */
 /* CommonTypesMetaclass.module_state_clear */
 Py_CLEAR(clear_module_state->__pyx_CommonTypesMetaclassType);
@@ -2717,8 +2699,8 @@ static CYTHON_SMALL_CODE int __pyx_m_traverse(PyObject *m, visitproc visit, void
   Py_VISIT(traverse_module_state->__pyx_type_7negamax_NegamaxSearch);
   for (int i=0; i<1; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_tuple[i]); }
   for (int i=0; i<5; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_codeobj_tab[i]); }
-  for (int i=0; i<72; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
-  for (int i=0; i<2; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_number_tab[i]); }
+  for (int i=0; i<70; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_string_tab[i]); }
+  for (int i=0; i<1; ++i) { __Pyx_VISIT_CONST(traverse_module_state->__pyx_number_tab[i]); }
 /* #### Code section: module_state_traverse_contents ### */
 /* CommonTypesMetaclass.module_state_traverse */
 Py_VISIT(traverse_module_state->__pyx_CommonTypesMetaclassType);
@@ -3075,8 +3057,8 @@ static int __pyx_pf_7negamax_13NegamaxSearch___init__(struct __pyx_obj_7negamax_
 /* "negamax.pyx":29
  *         # No explicit init needed for unordered_map; defaults to empty
  * 
- *     cpdef double search(self, object board, int depth, double alpha=-100000.0, double beta=100000.0):             # <<<<<<<<<<<<<<
- *         return self._search(board, depth, alpha, beta)
+ *     cpdef double search(self, object board, int depth):             # <<<<<<<<<<<<<<
+ *         return self._search(board, depth)
  * 
 */
 
@@ -3087,9 +3069,7 @@ PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-static double __pyx_f_7negamax_13NegamaxSearch_search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth, int __pyx_skip_dispatch, struct __pyx_opt_args_7negamax_13NegamaxSearch_search *__pyx_optional_args) {
-  double __pyx_v_alpha = __pyx_mstate_global->__pyx_k_;
-  double __pyx_v_beta = ((double)100000.0);
+static double __pyx_f_7negamax_13NegamaxSearch_search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth, int __pyx_skip_dispatch) {
   double __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -3097,22 +3077,12 @@ static double __pyx_f_7negamax_13NegamaxSearch_search(struct __pyx_obj_7negamax_
   PyObject *__pyx_t_3 = NULL;
   PyObject *__pyx_t_4 = NULL;
   PyObject *__pyx_t_5 = NULL;
-  PyObject *__pyx_t_6 = NULL;
-  PyObject *__pyx_t_7 = NULL;
-  size_t __pyx_t_8;
-  double __pyx_t_9;
+  size_t __pyx_t_6;
+  double __pyx_t_7;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("search", 0);
-  if (__pyx_optional_args) {
-    if (__pyx_optional_args->__pyx_n > 0) {
-      __pyx_v_alpha = __pyx_optional_args->alpha;
-      if (__pyx_optional_args->__pyx_n > 1) {
-        __pyx_v_beta = __pyx_optional_args->beta;
-      }
-    }
-  }
   /* Check if called by wrapper */
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
@@ -3137,11 +3107,7 @@ static double __pyx_f_7negamax_13NegamaxSearch_search(struct __pyx_obj_7negamax_
         __pyx_t_4 = __pyx_t_1; 
         __pyx_t_5 = __Pyx_PyLong_From_int(__pyx_v_depth); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 29, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_6 = PyFloat_FromDouble(__pyx_v_alpha); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 29, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_6);
-        __pyx_t_7 = PyFloat_FromDouble(__pyx_v_beta); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 29, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_7);
-        __pyx_t_8 = 1;
+        __pyx_t_6 = 1;
         #if CYTHON_UNPACK_METHODS
         if (unlikely(PyMethod_Check(__pyx_t_4))) {
           __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_4);
@@ -3150,23 +3116,21 @@ static double __pyx_f_7negamax_13NegamaxSearch_search(struct __pyx_obj_7negamax_
           __Pyx_INCREF(__pyx_t_3);
           __Pyx_INCREF(__pyx__function);
           __Pyx_DECREF_SET(__pyx_t_4, __pyx__function);
-          __pyx_t_8 = 0;
+          __pyx_t_6 = 0;
         }
         #endif
         {
-          PyObject *__pyx_callargs[5] = {__pyx_t_3, __pyx_v_board, __pyx_t_5, __pyx_t_6, __pyx_t_7};
-          __pyx_t_2 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_4, __pyx_callargs+__pyx_t_8, (5-__pyx_t_8) | (__pyx_t_8*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
+          PyObject *__pyx_callargs[3] = {__pyx_t_3, __pyx_v_board, __pyx_t_5};
+          __pyx_t_2 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_4, __pyx_callargs+__pyx_t_6, (3-__pyx_t_6) | (__pyx_t_6*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
           __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
           __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-          __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
           __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
           if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 29, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
         }
-        __pyx_t_9 = __Pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_9 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_7 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-        __pyx_r = __pyx_t_9;
+        __pyx_r = __pyx_t_7;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         goto __pyx_L0;
       }
@@ -3185,20 +3149,20 @@ static double __pyx_f_7negamax_13NegamaxSearch_search(struct __pyx_obj_7negamax_
 
   /* "negamax.pyx":30
  * 
- *     cpdef double search(self, object board, int depth, double alpha=-100000.0, double beta=100000.0):
- *         return self._search(board, depth, alpha, beta)             # <<<<<<<<<<<<<<
+ *     cpdef double search(self, object board, int depth):
+ *         return self._search(board, depth)             # <<<<<<<<<<<<<<
  * 
  *     # Optional: For Python introspection (e.g., print cache size)
 */
-  __pyx_t_9 = ((struct __pyx_vtabstruct_7negamax_NegamaxSearch *)__pyx_v_self->__pyx_vtab)->_search(__pyx_v_self, __pyx_v_board, __pyx_v_depth, __pyx_v_alpha, __pyx_v_beta); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 30, __pyx_L1_error)
-  __pyx_r = __pyx_t_9;
+  __pyx_t_7 = ((struct __pyx_vtabstruct_7negamax_NegamaxSearch *)__pyx_v_self->__pyx_vtab)->_search(__pyx_v_self, __pyx_v_board, __pyx_v_depth); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 30, __pyx_L1_error)
+  __pyx_r = __pyx_t_7;
   goto __pyx_L0;
 
   /* "negamax.pyx":29
  *         # No explicit init needed for unordered_map; defaults to empty
  * 
- *     cpdef double search(self, object board, int depth, double alpha=-100000.0, double beta=100000.0):             # <<<<<<<<<<<<<<
- *         return self._search(board, depth, alpha, beta)
+ *     cpdef double search(self, object board, int depth):             # <<<<<<<<<<<<<<
+ *         return self._search(board, depth)
  * 
 */
 
@@ -3209,8 +3173,6 @@ static double __pyx_f_7negamax_13NegamaxSearch_search(struct __pyx_obj_7negamax_
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_XDECREF(__pyx_t_7);
   __Pyx_AddTraceback("negamax.NegamaxSearch.search", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
@@ -3226,7 +3188,7 @@ PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_7negamax_13NegamaxSearch_2search, "NegamaxSearch.search(self, board, int depth, double alpha=-100000.0, double beta=100000.0) -> double");
+PyDoc_STRVAR(__pyx_doc_7negamax_13NegamaxSearch_2search, "NegamaxSearch.search(self, board, int depth) -> double");
 static PyMethodDef __pyx_mdef_7negamax_13NegamaxSearch_3search = {"search", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_7negamax_13NegamaxSearch_3search, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_7negamax_13NegamaxSearch_2search};
 static PyObject *__pyx_pw_7negamax_13NegamaxSearch_3search(PyObject *__pyx_v_self, 
 #if CYTHON_METH_FASTCALL
@@ -3237,13 +3199,11 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
 ) {
   PyObject *__pyx_v_board = 0;
   int __pyx_v_depth;
-  double __pyx_v_alpha;
-  double __pyx_v_beta;
   #if !CYTHON_METH_FASTCALL
   CYTHON_UNUSED Py_ssize_t __pyx_nargs;
   #endif
   CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
-  PyObject* values[4] = {0,0,0,0};
+  PyObject* values[2] = {0,0};
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -3259,19 +3219,11 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   #endif
   __pyx_kwvalues = __Pyx_KwValues_FASTCALL(__pyx_args, __pyx_nargs);
   {
-    PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_board,&__pyx_mstate_global->__pyx_n_u_depth,&__pyx_mstate_global->__pyx_n_u_alpha,&__pyx_mstate_global->__pyx_n_u_beta,0};
+    PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_board,&__pyx_mstate_global->__pyx_n_u_depth,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
     if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 29, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
-        case  4:
-        values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 29, __pyx_L3_error)
-        CYTHON_FALLTHROUGH;
-        case  3:
-        values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 29, __pyx_L3_error)
-        CYTHON_FALLTHROUGH;
         case  2:
         values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
         if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 29, __pyx_L3_error)
@@ -3286,43 +3238,22 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
       if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "search", 0) < (0)) __PYX_ERR(0, 29, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 2; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("search", 0, 2, 4, i); __PYX_ERR(0, 29, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("search", 1, 2, 2, i); __PYX_ERR(0, 29, __pyx_L3_error) }
       }
+    } else if (unlikely(__pyx_nargs != 2)) {
+      goto __pyx_L5_argtuple_error;
     } else {
-      switch (__pyx_nargs) {
-        case  4:
-        values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 29, __pyx_L3_error)
-        CYTHON_FALLTHROUGH;
-        case  3:
-        values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 29, __pyx_L3_error)
-        CYTHON_FALLTHROUGH;
-        case  2:
-        values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 29, __pyx_L3_error)
-        values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 29, __pyx_L3_error)
-        break;
-        default: goto __pyx_L5_argtuple_error;
-      }
+      values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 29, __pyx_L3_error)
+      values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 29, __pyx_L3_error)
     }
     __pyx_v_board = values[0];
     __pyx_v_depth = __Pyx_PyLong_As_int(values[1]); if (unlikely((__pyx_v_depth == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L3_error)
-    if (values[2]) {
-      __pyx_v_alpha = __Pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_alpha == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L3_error)
-    } else {
-      __pyx_v_alpha = __pyx_mstate_global->__pyx_k_;
-    }
-    if (values[3]) {
-      __pyx_v_beta = __Pyx_PyFloat_AsDouble(values[3]); if (unlikely((__pyx_v_beta == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L3_error)
-    } else {
-      __pyx_v_beta = ((double)100000.0);
-    }
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("search", 0, 2, 4, __pyx_nargs); __PYX_ERR(0, 29, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("search", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 29, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -3333,7 +3264,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7negamax_13NegamaxSearch_2search(((struct __pyx_obj_7negamax_NegamaxSearch *)__pyx_v_self), __pyx_v_board, __pyx_v_depth, __pyx_v_alpha, __pyx_v_beta);
+  __pyx_r = __pyx_pf_7negamax_13NegamaxSearch_2search(((struct __pyx_obj_7negamax_NegamaxSearch *)__pyx_v_self), __pyx_v_board, __pyx_v_depth);
 
   /* function exit code */
   for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
@@ -3343,30 +3274,26 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7negamax_13NegamaxSearch_2search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth, double __pyx_v_alpha, double __pyx_v_beta) {
+static PyObject *__pyx_pf_7negamax_13NegamaxSearch_2search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   double __pyx_t_1;
-  struct __pyx_opt_args_7negamax_13NegamaxSearch_search __pyx_t_2;
-  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_2 = NULL;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("search", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2.__pyx_n = 2;
-  __pyx_t_2.alpha = __pyx_v_alpha;
-  __pyx_t_2.beta = __pyx_v_beta;
-  __pyx_t_1 = __pyx_vtabptr_7negamax_NegamaxSearch->search(__pyx_v_self, __pyx_v_board, __pyx_v_depth, 1, &__pyx_t_2); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L1_error)
-  __pyx_t_3 = PyFloat_FromDouble(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 29, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __pyx_r = __pyx_t_3;
-  __pyx_t_3 = 0;
+  __pyx_t_1 = __pyx_f_7negamax_13NegamaxSearch_search(__pyx_v_self, __pyx_v_board, __pyx_v_depth, 1); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_r = __pyx_t_2;
+  __pyx_t_2 = 0;
   goto __pyx_L0;
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_2);
   __Pyx_AddTraceback("negamax.NegamaxSearch.search", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
@@ -3468,7 +3395,7 @@ static size_t __pyx_f_7negamax_13NegamaxSearch_get_cache_size(struct __pyx_obj_7
  *     cpdef size_t get_cache_size(self):
  *         return self.eval_cache.size()             # <<<<<<<<<<<<<<
  * 
- *     cdef double _search(self, object board, int depth, double alpha, double beta):
+ *     cdef double _search(self, object board, int depth):
 */
   __pyx_r = __pyx_v_self->eval_cache.size();
   goto __pyx_L0;
@@ -3568,12 +3495,12 @@ static PyObject *__pyx_pf_7negamax_13NegamaxSearch_4get_cache_size(struct __pyx_
 /* "negamax.pyx":36
  *         return self.eval_cache.size()
  * 
- *     cdef double _search(self, object board, int depth, double alpha, double beta):             # <<<<<<<<<<<<<<
+ *     cdef double _search(self, object board, int depth):             # <<<<<<<<<<<<<<
  *         cdef uint64_t key
  *         cdef double eval_score
 */
 
-static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth, double __pyx_v_alpha, double __pyx_v_beta) {
+static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax_NegamaxSearch *__pyx_v_self, PyObject *__pyx_v_board, int __pyx_v_depth) {
   PyObject *__pyx_v_moves = 0;
   double __pyx_v_max_score;
   PyObject *__pyx_v_move = 0;
@@ -3800,7 +3727,7 @@ static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax
  * 
  *         for move in moves:             # <<<<<<<<<<<<<<
  *             if board.make_move(move[0], move[1], move[2]):
- *                 score = self._search(board, depth - 1, -beta, -alpha)
+ *                 score = self._search(board, depth - 1)
 */
   if (unlikely(__pyx_v_moves == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
@@ -3827,7 +3754,7 @@ static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax
  * 
  *         for move in moves:
  *             if board.make_move(move[0], move[1], move[2]):             # <<<<<<<<<<<<<<
- *                 score = self._search(board, depth - 1, -beta, -alpha)
+ *                 score = self._search(board, depth - 1)
  *                 board.undo_move()
 */
     __pyx_t_3 = __pyx_v_board;
@@ -3856,19 +3783,19 @@ static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax
       /* "negamax.pyx":57
  *         for move in moves:
  *             if board.make_move(move[0], move[1], move[2]):
- *                 score = self._search(board, depth - 1, -beta, -alpha)             # <<<<<<<<<<<<<<
+ *                 score = self._search(board, depth - 1)             # <<<<<<<<<<<<<<
  *                 board.undo_move()
  *             else:
 */
-      __pyx_t_6 = ((struct __pyx_vtabstruct_7negamax_NegamaxSearch *)__pyx_v_self->__pyx_vtab)->_search(__pyx_v_self, __pyx_v_board, (__pyx_v_depth - 1), (-__pyx_v_beta), (-__pyx_v_alpha)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 57, __pyx_L1_error)
+      __pyx_t_6 = ((struct __pyx_vtabstruct_7negamax_NegamaxSearch *)__pyx_v_self->__pyx_vtab)->_search(__pyx_v_self, __pyx_v_board, (__pyx_v_depth - 1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 57, __pyx_L1_error)
       __pyx_v_score = __pyx_t_6;
 
       /* "negamax.pyx":58
  *             if board.make_move(move[0], move[1], move[2]):
- *                 score = self._search(board, depth - 1, -beta, -alpha)
+ *                 score = self._search(board, depth - 1)
  *                 board.undo_move()             # <<<<<<<<<<<<<<
  *             else:
- *                 score = 0.0
+ *                 score = 100000.0
 */
       __pyx_t_10 = __pyx_v_board;
       __Pyx_INCREF(__pyx_t_10);
@@ -3886,7 +3813,7 @@ static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax
  * 
  *         for move in moves:
  *             if board.make_move(move[0], move[1], move[2]):             # <<<<<<<<<<<<<<
- *                 score = self._search(board, depth - 1, -beta, -alpha)
+ *                 score = self._search(board, depth - 1)
  *                 board.undo_move()
 */
       goto __pyx_L9;
@@ -3895,17 +3822,17 @@ static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax
     /* "negamax.pyx":60
  *                 board.undo_move()
  *             else:
- *                 score = 0.0             # <<<<<<<<<<<<<<
+ *                 score = 100000.0             # <<<<<<<<<<<<<<
  * 
  *             score = -score
 */
     /*else*/ {
-      __pyx_v_score = 0.0;
+      __pyx_v_score = 100000.0;
     }
     __pyx_L9:;
 
     /* "negamax.pyx":62
- *                 score = 0.0
+ *                 score = 100000.0
  * 
  *             score = -score             # <<<<<<<<<<<<<<
  *             if score > max_score:
@@ -3928,7 +3855,7 @@ static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax
  *             if score > max_score:
  *                 max_score = score             # <<<<<<<<<<<<<<
  * 
- *             if score > alpha:
+ *         return max_score
 */
       __pyx_v_max_score = __pyx_v_score;
 
@@ -3941,79 +3868,18 @@ static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax
 */
     }
 
-    /* "negamax.pyx":66
- *                 max_score = score
- * 
- *             if score > alpha:             # <<<<<<<<<<<<<<
- *                 alpha = score
- * 
-*/
-    __pyx_t_1 = (__pyx_v_score > __pyx_v_alpha);
-    if (__pyx_t_1) {
-
-      /* "negamax.pyx":67
- * 
- *             if score > alpha:
- *                 alpha = score             # <<<<<<<<<<<<<<
- * 
- *             if alpha >= beta:
-*/
-      __pyx_v_alpha = __pyx_v_score;
-
-      /* "negamax.pyx":66
- *                 max_score = score
- * 
- *             if score > alpha:             # <<<<<<<<<<<<<<
- *                 alpha = score
- * 
-*/
-    }
-
-    /* "negamax.pyx":69
- *                 alpha = score
- * 
- *             if alpha >= beta:             # <<<<<<<<<<<<<<
- *                 break
- * 
-*/
-    __pyx_t_1 = (__pyx_v_alpha >= __pyx_v_beta);
-    if (__pyx_t_1) {
-
-      /* "negamax.pyx":70
- * 
- *             if alpha >= beta:
- *                 break             # <<<<<<<<<<<<<<
- * 
- *         return max_score
-*/
-      goto __pyx_L8_break;
-
-      /* "negamax.pyx":69
- *                 alpha = score
- * 
- *             if alpha >= beta:             # <<<<<<<<<<<<<<
- *                 break
- * 
-*/
-    }
-
     /* "negamax.pyx":55
  *         cdef double score
  * 
  *         for move in moves:             # <<<<<<<<<<<<<<
  *             if board.make_move(move[0], move[1], move[2]):
- *                 score = self._search(board, depth - 1, -beta, -alpha)
+ *                 score = self._search(board, depth - 1)
 */
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  goto __pyx_L13_for_end;
-  __pyx_L8_break:;
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  goto __pyx_L13_for_end;
-  __pyx_L13_for_end:;
 
-  /* "negamax.pyx":72
- *                 break
+  /* "negamax.pyx":66
+ *                 max_score = score
  * 
  *         return max_score             # <<<<<<<<<<<<<<
 */
@@ -4023,7 +3889,7 @@ static double __pyx_f_7negamax_13NegamaxSearch__search(struct __pyx_obj_7negamax
   /* "negamax.pyx":36
  *         return self.eval_cache.size()
  * 
- *     cdef double _search(self, object board, int depth, double alpha, double beta):             # <<<<<<<<<<<<<<
+ *     cdef double _search(self, object board, int depth):             # <<<<<<<<<<<<<<
  *         cdef uint64_t key
  *         cdef double eval_score
 */
@@ -4968,9 +4834,9 @@ static int __Pyx_modinit_type_init_code(__pyx_mstatetype *__pyx_mstate) {
   __Pyx_RefNannySetupContext("__Pyx_modinit_type_init_code", 0);
   /*--- Type init code ---*/
   __pyx_vtabptr_7negamax_NegamaxSearch = &__pyx_vtable_7negamax_NegamaxSearch;
-  __pyx_vtable_7negamax_NegamaxSearch.search = (double (*)(struct __pyx_obj_7negamax_NegamaxSearch *, PyObject *, int, int __pyx_skip_dispatch, struct __pyx_opt_args_7negamax_13NegamaxSearch_search *__pyx_optional_args))__pyx_f_7negamax_13NegamaxSearch_search;
+  __pyx_vtable_7negamax_NegamaxSearch.search = (double (*)(struct __pyx_obj_7negamax_NegamaxSearch *, PyObject *, int, int __pyx_skip_dispatch))__pyx_f_7negamax_13NegamaxSearch_search;
   __pyx_vtable_7negamax_NegamaxSearch.get_cache_size = (size_t (*)(struct __pyx_obj_7negamax_NegamaxSearch *, int __pyx_skip_dispatch))__pyx_f_7negamax_13NegamaxSearch_get_cache_size;
-  __pyx_vtable_7negamax_NegamaxSearch._search = (double (*)(struct __pyx_obj_7negamax_NegamaxSearch *, PyObject *, int, double, double))__pyx_f_7negamax_13NegamaxSearch__search;
+  __pyx_vtable_7negamax_NegamaxSearch._search = (double (*)(struct __pyx_obj_7negamax_NegamaxSearch *, PyObject *, int))__pyx_f_7negamax_13NegamaxSearch__search;
   #if CYTHON_USE_TYPE_SPECS
   __pyx_mstate->__pyx_ptype_7negamax_NegamaxSearch = (PyTypeObject *) __Pyx_PyType_FromModuleAndSpec(__pyx_m, &__pyx_type_7negamax_NegamaxSearch_spec, NULL); if (unlikely(!__pyx_mstate->__pyx_ptype_7negamax_NegamaxSearch)) __PYX_ERR(0, 20, __pyx_L1_error)
   if (__Pyx_fix_up_extension_type_from_spec(&__pyx_type_7negamax_NegamaxSearch_spec, __pyx_mstate->__pyx_ptype_7negamax_NegamaxSearch) < (0)) __PYX_ERR(0, 20, __pyx_L1_error)
@@ -5347,23 +5213,15 @@ __Pyx_RefNannySetupContext("PyInit_negamax", 0);
   /* "negamax.pyx":29
  *         # No explicit init needed for unordered_map; defaults to empty
  * 
- *     cpdef double search(self, object board, int depth, double alpha=-100000.0, double beta=100000.0):             # <<<<<<<<<<<<<<
- *         return self._search(board, depth, alpha, beta)
+ *     cpdef double search(self, object board, int depth):             # <<<<<<<<<<<<<<
+ *         return self._search(board, depth)
  * 
 */
-  __pyx_mstate_global->__pyx_k_ = (-100000.0);
-  __pyx_t_2 = PyFloat_FromDouble((-100000.0)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 29, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyTuple_Pack(2, __pyx_t_2, __pyx_mstate_global->__pyx_float_100000_0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 29, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_7negamax_13NegamaxSearch_3search, __Pyx_CYFUNCTION_CCLASS, __pyx_mstate_global->__pyx_n_u_NegamaxSearch_search, NULL, __pyx_mstate_global->__pyx_n_u_negamax, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 29, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
   #endif
-  __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_2, __pyx_t_4);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   if (__Pyx_SetItemOnTypeDict(__pyx_mstate_global->__pyx_ptype_7negamax_NegamaxSearch, __pyx_mstate_global->__pyx_n_u_search, __pyx_t_2) < (0)) __PYX_ERR(0, 29, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
@@ -5521,31 +5379,31 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
 static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
-    const struct { const unsigned int length: 8; } index[] = {{179},{1},{1},{8},{7},{6},{2},{9},{26},{22},{14},{5},{13},{31},{33},{28},{20},{20},{5},{18},{4},{5},{18},{7},{5},{8},{5},{9},{8},{14},{15},{12},{3},{13},{11},{5},{8},{9},{4},{10},{8},{7},{7},{3},{14},{12},{11},{10},{28},{14},{12},{10},{17},{13},{6},{4},{12},{10},{12},{19},{5},{8},{9},{6},{12},{6},{10},{11},{13},{28},{95},{56}};
-    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (779 bytes) */
-const char* const cstring = "BZh91AY&SY\3509\362t\000\000P\177\377\346\315\274\302\340\217\344\317\377\241|\214\277\377\377\364@@@@@@@@@@@@@\000@\000@\002\2359\235Vls\206\2414Q\246\323L4$\315M\033H\000\000\364C 4h\364G\251\352cH\361OH54\251\357S\005M\036\312\217LCP\000\000\000\r\006@\000\000\006A\244\310\320\244\362G\2506\240=F\236\240\000\000\000\000\000\000\036\240\tM\"4OSJ~ \211\352i\352\000\323A\240\000\000\000\0004<\243\312(\355\r\372\374\376\033X\333\026\312\2607\372%\t\222\376G\372\261l\254\304\024X\364\330\346\270z\245\301\365\3354|0\346\335<2\034R\306\234\247\031\326U#(\2454\021\326Q\027\023\256P\023\302\262\316\306\021T\323\027xVi\347\230\241\013\264\337m\304\322\2545\322\016\260f\333\353\265\271\243\301\227\354\331qT\312\207\034=\215\360\305\243\003\336\3474\026\226\361\304\354\234\024\241\313\037\030\200%\214\020\213\010Z\230'\000\214s[d#qUQ\377\225U\007\005\241\370\355sb\210F\352\315\002@\312\201\203b\031\301\014\221\371&h.\330\002\244\304Y\334\255\323\271:cR~\205\247\357\333i\254\351\333\364\207P\t\265\232:\267\201\220\332\314i\2261\261\355=\312\327\003\177{\0163V\336\026.\276\304g\036AC\263\"\006\364\016SkJ\200\366X0\014~\365\230\r\211\313\231.\226G\260%l$\t\362\263\005\014\260\334;\224\266\344)\035\\\357\004\222\242\314\221\253\001\245\207JP1\353\272VD0>\254\320\3242\2127\003S\311\3214\342\257\020\202\230\027\0330\225J\t\204\022H\\t\220ek\363\236\217\270\005@T\316\354\030 \320\3124\305{\263\202[\2563\325\0359r,\222\3212\250\017T\253\215T\005\256\216\204\367\320\260\036\2620\263\014\030Z\367\200)6E'\013&\344h4\"\006@\316\301\270\300c\030\030b^\025yS\003\204\324\252\n\306d\256\235\257\230-\307\305\2651\272\004\264O\202*\013\302|\323\206\201\007I\030\225i\205Z\351\010\232\234\215\255uPO\251X Uk\210H\225\227\024\025\302\267/\210\351B\371\333^}\272\244a\240,M\311\237\t\"O\210\240M.\004GB\221s\357\361\013/\024C\226\235\232\227R\032\307w\225\220u\305XC8\323\312F\232\tL\204\330\204WX\303\262F`\237\035\3415\322j\311\326\220\232\327\010nF\231Z\201\nT\214\010Zp.\242\356\222S\220!B\202,""\025\324\203\026OrC\213\033\330D\3773\350@\216\214\031szK\202%$\3177\354\374\032\314\317$\313OS\260y\345\211\252\202\330\244\037\376\366T\"\305\272\257\213\202\213\331\033\203-\223v\267\372\021\316P\346\264\377\305\334\221N\024$:\016|\235\000";
-    PyObject *data = __Pyx_DecompressString(cstring, 779, 2);
+    const struct { const unsigned int length: 8; } index[] = {{1},{179},{1},{8},{7},{6},{2},{9},{26},{22},{14},{5},{13},{31},{33},{28},{20},{20},{18},{5},{18},{7},{5},{8},{5},{9},{8},{14},{15},{12},{3},{13},{11},{5},{8},{9},{4},{10},{8},{7},{7},{3},{14},{12},{11},{10},{28},{14},{12},{10},{17},{13},{6},{4},{12},{10},{12},{19},{5},{8},{9},{6},{12},{6},{10},{11},{15},{13},{95},{56}};
+    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (757 bytes) */
+const char* const cstring = "BZh91AY&SY\301\201D)\000\0001\177\377\346\315\274\302\340\217\344\317\377\241|\200\277\377\377\364@@@@@@@@@@@@@\000@\000@\002}!\245H\301\252d\365MF1M\344\324\236\210\365\r\244\r=@\000\320h\r\036S\324h\036\210\332\237\242\203S$\3015M\036\324\324\360\223\032\203\324\000\000\000\000\000\000\000\01644\r\032di\243L\200\304\301\000\000\320\032\003L\200\300\231\002PA\001)\372j6\241\243H\032d\006A\240\000\000\003A\241\345=\022<\"~\370\377)\244NE\235)\312\344\025\025s\303B\333\247\224\304\026\254mcK\373%\372\342\336n-\311&\274Rc!VZ\231Hdu\266N\323U\363\330}*\305\273f\200Q\270\3477\300y\323\316h\203\351\202\013\024()\032}W\312\320\3248}\007\263s\246\360\247\271\027t\252\262k\017$\255\355\207a8,\350\316\310\265\275N\347\323 \226\221\230\026J.\211\230\304\302D\035c\010m\217\016\214\244\363\323\243E\021%|\367!\030R\356\215\032\240\026\013\240a\225\331\250vG\236\3533\230(\024*\020Fb\226Vb/5\352\334\177>\027\032M\376&\340\002\224\325\332\354\343\003P\326\300\302z\202_\203\\\261`:\375*\3573\347\r|w\332\246Q\246\022dE\034\335x\344\215U.\301\216\235\245\000\241\367\324\240#\211\355\240\3374\220p6\270\220)\257\034Zu\310\360\177n\242\342V\014\240f\225UX\333\253\n*3\240\312\263sSN9\333\000\251\264`\372\004X,k#<k\\*\2146`_:J%N\334\363\"\242\252N9\224\243/2:\373\032/'yB3 T\350\371\004<\021 \200\"\3100\203e\237\231\245)YS\303R\r\254tM\250.\365*l\366\3338b\354T\3520\304\261l\004\222\026H\211\317h\274\006tA\220f\301\242\300\252\242\261c\205lEm6\302\265\244Ff\205\252\210\231\000\271~$\255\323\004.\252o\305\200\222\205\024\210\300\262\371\026\030P\236\331\204Ow\027SI\224\224\227\226\202\004\321\274\205\361\264H\024\034\227\030\204@\311_f\273\251\313\257D\313\"\026\252t+\346*\223lDEI\361\251\r\265\231\215\267\366Ko\026\001\270\310\222u\230\226\2634\355v\\\313`e\022\274\204%\022u\217Z\017\005\340,\344\231\200W\316g\255{\tI]*\242\245\314\017\265\tN\345\021U\330E\257\206\351]\254\223\223\001M\0300\350n\267\037o\331\243bOI`\302\027\211t\250|\322\344\330\360\317\343\354\326O\317\354\253\212\004\256i""\326\337@\360\372Eqt<!\242\260M\270n\016A}\0344\031\311J\221\231\025@DG\377\027rE8P\220\301\201D)";
+    PyObject *data = __Pyx_DecompressString(cstring, 757, 2);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (683 bytes) */
-const char* const cstring = "x\332uR\275o\0231\024'R\020\221\212Z\025\220`A8S\207\302\265\221*\265R\371*\364C,U[\220:\024\311r\354\227\304\344\316\276\234}i\0161d\314x\343\215\0313f\354\230\261c\306\214\375\023\370\023x\276\213\"\302\307`\373\371}\374~~\277\347Sm\201\330\026\263\344cb[Z\021i\210\000_\326!b\026\374\204\030\033In!rI\212\234\035\235\275\332\331\333!L\t\022\3017\340\326\020\023\327\271\317\214\001Ct\203\324c\351[\251\210MB0\036\371\324 \211\216\211\002\020\304j\022b\336\357\005\266\005\212\030\260\316 \033L)m\231\225ZQ,\227\252\271A\204\214\220Dv\301U\0373\337\200\347\275cBP\314\004!\r\253\373\000\312\355M.Ma\t\003~\303\203.\363i#V\334\265\204\331\344T+0\021\337\342y\243[\n\232,`=/Lz\257]\223\252it\034qx\373A\263H\234\026\321\317\300\"\336Z\272x\224F b\016\264\000\242\364\3170\366c\260\215\377%4\301R\316x\013\250\221\337a9f\362\203\322\263\244\207\353\020\225\307\342\236\275\200\006\363\303\026c&Q\\j\217\353H\307\2502\230:XVw\017\346>^\251D\345\"\306\241\316x\233'\310a\214\200\320\"\242pX\305\261P\206\316\367\345\027\345\327@w\301P_\032\233\207\213~\020\276A\245\241\013z\264\221\021\013y[Z\010\014\245\001C\007\356m\310!\002\346\270\003-b\037\313)U,\300s.\2753\256)\ru\210\0336\234\343\2308(n\021\230\330\267\205=\247w\246\373W\205\025\253P\3626\342.IX\304\272\326}\004\307\330\211\231_\260.\346F\377\232\340\302\001=7>\207\343\376P>\312\371\233\321\0228\205\374I\213\001\323\177\014{\036\261\340\244\213\225\320\271\020q(\320\035\033X\024\340\020b0\327-\024.\317\350\227f\345\315Qmt<\256\366\017f\225\265\201M\3673\030\326\246\345\303\311\301\364\350jz\365\265\360\356e\265\354d\270;\332\030\257\367K?+\367\356\257\016\276\244\31731\254\316\312\017\007'i-=\316^\016\331\254\374\240\337\035\\\246G\331\223\354|Vy\224Vg\225\247i\347\256\362,+\271X\007\321\246k\336H\214\253\343\335\233\315\311\345\355\301\335\262\347\274_\272+\277\310:S\262=^\271\331\237\264\247\347\027\263\362\343\364\315\2602*\215\326\035\310\217t7C\334\255Qg\272\375~\262z\213\254+\203\332/I5\2664";
-    PyObject *data = __Pyx_DecompressString(cstring, 683, 1);
+    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (659 bytes) */
+const char* const cstring = "x\332uR;o\3330\020\256\001\0275\220\"A\037@\273\024\245\247\014i\225\030\010\220\000\351+m\223\240K\220\244\0052\0224y\266YK\244,\222\216Ut\360\350Q\243F\217\036=f\314\2301\243\307\374\204\376\204\036%\327\250\373\030t\374\216w\367\035\357;\005\307\332\002\261\035f\311\207\324v\264\"\322\020\001\241lB\302,\204)16\221\334B\342\223\024998y\271\275\273M\230\022$\201\257\300\255!\3065y\310\214\001Ct\2134\235\014\255T\304\2461\230\200|j\221T;\242\000\004\261\232\304\230\367{\201\355\200\"\006\254\007d\235)\245-\263R+\212\345R\265\327\211\220\t6\221}\360\325\207,4\020\274eBPL\004!\rk\206\000\312\3336\227\246D\302@\330\n\240\317B\332r\212\373\2110\233\034k\005&\341\233\274\230sSA\233El\020\304\351\340\225\237Q\265\215v\t\2077\3575K\304q\031\375\014,\341\235%'\2404\001\3418\320\222\210\322?\3038\216\301)\376\227\320\006K9\343\035\240F~\203\345\230)\016JO\322\001~\037Qx,\036\3303h1\223*.u\300u\242\035\352\013\246\351\337\311C\204T\242^\t\343\320d\274\313S\2446F@l\221Hx\212\362X\010B\347v\371!\205\033\351>\030\032Jc\213p9\006\322\267\2504t\321\0321v\304B\336\225\026\"Ci\304\360\002m\027\n\212\210\371\336\221\026.\304rJ\025\213\360\234+\356\301\005\245\261\216\321\340\234\005\217qQ\351%`\\hK<o\357\241\377\233J\344T,y\027y\227\224+c}\353\367\357;\366\034\013\313\256\213u\321\277\026\267\270\200\201\337\232\347\361\277N\261\301\371\233\021\t\024\277x\322b\257\364\037;\236G,x\351\234\022\272\020\302\305\002\257\235\201E\001.\301\201\271\350\240pE\306\2602\253nL\032\223\303i}\270?\253\255\215l\266\2337\362\243q\343\227\273\227\003:\225\037\265;wWG_\262g\271\030\327g\325\373\243\243\254\221\035\346/\306lV\2757\354\217\316\263\203\374q~:\253=\314\352\263\332\223\254w[{\232W|\254\207<7k\301DL\353\323\235\313\215\253\363\353\375\333\345\233\323a\345\266\372<\357\335\220\255\351\312\345\336U\367\346\364lV}\224\275\036\327&\225\311\003O\362=\333\311\221ws\322\273\331zw\265z\215]WF\215\237Yr\254\255";
+    PyObject *data = __Pyx_DecompressString(cstring, 659, 1);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #else /* compression: none (1109 bytes) */
-const char* const bytes = "Note that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False..?add_notedisableenablegcisenabledself.eval_func is not Nonesrc/cython/negamax.pyx<stringsource>BoardNegamaxSearchNegamaxSearch.__reduce_cython__NegamaxSearch.__setstate_cython__NegamaxSearch.get_cache_sizeNegamaxSearch.search__Pyx_PyDict_NextRefalphaasyncio.coroutinesbetaboardcline_in_tracebackcychessdepth__dict___dicteval_func__func__get_cache_size_get_moves_list__getstate__inf_is_coroutineis_in_checkitems__main__make_movemath__module____name__negamax__new__pop__pyx_checksum__pyx_result__pyx_state__pyx_type__pyx_unpickle_NegamaxSearch__pyx_vtable____qualname____reduce____reduce_cython____reduce_ex__searchself__set_name__setdefault__setstate____setstate_cython__state__test__undo_moveupdateuse_setstatevalueswhite_move\200\001\330\004+\2501\250F\260!\200A\330\010\017\210t\220;\230e\2401\320\004D\300A\320E[\320[\\\330\010\017\210t\2208\2301\230G\2407\250'\260\021\200\001\360\010\000\005\016\210T\220\035\230d\240!\330\004\014\210G\2201\220F\230,\240a\330\004\007\200v\210W\220E\230\024\230Q\330\010\022\220!\330\010\027\220q\340\010\030\230\001\330\004\007\200q\330\010\017\320\017.\250d\260!\2607\270+\300W\310A\340\010\017\320\017.\250d\260!\2607\270+\300Q\200\001\340\004\037\230q\320 0\260\013\270;\300k\320QR\330\004\023\220=\240\010\250\001\250\021\330\004\007\200|\2207\230!\330\010/\250q\3200@\300\016\310a\330\004\013\2101";
+    #else /* compression: none (1087 bytes) */
+const char* const bytes = ".Note that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.?add_notedisableenablegcisenabledself.eval_func is not Nonesrc/cython/negamax.pyx<stringsource>BoardNegamaxSearchNegamaxSearch.__reduce_cython__NegamaxSearch.__setstate_cython__NegamaxSearch.get_cache_sizeNegamaxSearch.search__Pyx_PyDict_NextRefasyncio.coroutinesboardcline_in_tracebackcychessdepth__dict___dicteval_func__func__get_cache_size_get_moves_list__getstate__inf_is_coroutineis_in_checkitems__main__make_movemath__module____name__negamax__new__pop__pyx_checksum__pyx_result__pyx_state__pyx_type__pyx_unpickle_NegamaxSearch__pyx_vtable____qualname____reduce____reduce_cython____reduce_ex__searchself__set_name__setdefault__setstate____setstate_cython__state__test__undo_moveupdateuse_setstatevalueswhite_move\200\001\330\004+\2501\250F\260!\200A\330\010\017\210t\2208\2301\230G\2401\200A\330\010\017\210t\220;\230e\2401\200\001\360\010\000\005\016\210T\220\035\230d\240!\330\004\014\210G\2201\220F\230,\240a\330\004\007\200v\210W\220E\230\024\230Q\330\010\022\220!\330\010\027\220q\340\010\030\230\001\330\004\007\200q\330\010\017\320\017.\250d\260!\2607\270+\300W\310A\340\010\017\320\017.\250d\260!\2607\270+\300Q\200\001\340\004\037\230q\320 0\260\013\270;\300k\320QR\330\004\023\220=\240\010\250\001\250\021\330\004\007\200|\2207\230!\330\010/\250q\3200@\300\016\310a\330\004\013\2101";
     PyObject *data = NULL;
     CYTHON_UNUSED_VAR(__Pyx_DecompressString);
     #endif
     PyObject **stringtab = __pyx_mstate->__pyx_string_tab;
     Py_ssize_t pos = 0;
-    for (int i = 0; i < 67; i++) {
+    for (int i = 0; i < 65; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyUnicode_DecodeUTF8(bytes + pos, bytes_length, NULL);
       if (likely(string) && i >= 11) PyUnicode_InternInPlace(&string);
@@ -5556,7 +5414,7 @@ const char* const bytes = "Note that Cython is deliberately stricter than PEP-48
       stringtab[i] = string;
       pos += bytes_length;
     }
-    for (int i = 67; i < 72; i++) {
+    for (int i = 65; i < 70; i++) {
       Py_ssize_t bytes_length = index[i].length;
       PyObject *string = PyBytes_FromStringAndSize(bytes + pos, bytes_length);
       stringtab[i] = string;
@@ -5567,14 +5425,14 @@ const char* const bytes = "Note that Cython is deliberately stricter than PEP-48
       }
     }
     Py_XDECREF(data);
-    for (Py_ssize_t i = 0; i < 72; i++) {
+    for (Py_ssize_t i = 0; i < 70; i++) {
       if (unlikely(PyObject_Hash(stringtab[i]) == -1)) {
         __PYX_ERR(0, 1, __pyx_L1_error)
       }
     }
     #if CYTHON_IMMORTAL_CONSTANTS
     {
-      PyObject **table = stringtab + 67;
+      PyObject **table = stringtab + 65;
       for (Py_ssize_t i=0; i<5; ++i) {
         #if CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
         Py_SET_REFCNT(table[i], _Py_IMMORTAL_REFCNT_LOCAL);
@@ -5586,15 +5444,7 @@ const char* const bytes = "Note that Cython is deliberately stricter than PEP-48
     #endif
   }
   {
-    PyObject **numbertab = __pyx_mstate->__pyx_number_tab;
-    double const c_constants[] = {100000.0};
-    for (int i = 0; i < 1; i++) {
-      numbertab[i] = PyFloat_FromDouble(c_constants[i]);
-      if (unlikely(!numbertab[i])) __PYX_ERR(0, 1, __pyx_L1_error)
-    }
-  }
-  {
-    PyObject **numbertab = __pyx_mstate->__pyx_number_tab + 1;
+    PyObject **numbertab = __pyx_mstate->__pyx_number_tab + 0;
     int32_t const cint_constants_4[] = {167812789L};
     for (int i = 0; i < 1; i++) {
       numbertab[i] = PyLong_FromLong(cint_constants_4[i - 0]);
@@ -5604,7 +5454,7 @@ const char* const bytes = "Note that Cython is deliberately stricter than PEP-48
   #if CYTHON_IMMORTAL_CONSTANTS
   {
     PyObject **table = __pyx_mstate->__pyx_number_tab;
-    for (Py_ssize_t i=0; i<2; ++i) {
+    for (Py_ssize_t i=0; i<1; ++i) {
       #if CYTHON_COMPILING_IN_CPYTHON_FREETHREADING
       Py_SET_REFCNT(table[i], _Py_IMMORTAL_REFCNT_LOCAL);
       #else
@@ -5619,7 +5469,7 @@ const char* const bytes = "Note that Cython is deliberately stricter than PEP-48
 }
 /* #### Code section: init_codeobjects ### */
 typedef struct {
-    unsigned int argcount : 3;
+    unsigned int argcount : 2;
     unsigned int num_posonly_args : 1;
     unsigned int num_kwonly_args : 1;
     unsigned int nlocals : 3;
@@ -5641,9 +5491,9 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
   PyObject* tuple_dedup_map = PyDict_New();
   if (unlikely(!tuple_dedup_map)) return -1;
   {
-    const __Pyx_PyCode_New_function_description descr = {5, 0, 0, 5, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 29};
-    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_self, __pyx_mstate->__pyx_n_u_board, __pyx_mstate->__pyx_n_u_depth, __pyx_mstate->__pyx_n_u_alpha, __pyx_mstate->__pyx_n_u_beta};
-    __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_cython_negamax_pyx, __pyx_mstate->__pyx_n_u_search, __pyx_mstate->__pyx_kp_b_iso88591_DAE_t81G7, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
+    const __Pyx_PyCode_New_function_description descr = {3, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 29};
+    PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_self, __pyx_mstate->__pyx_n_u_board, __pyx_mstate->__pyx_n_u_depth};
+    __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_cython_negamax_pyx, __pyx_mstate->__pyx_n_u_search, __pyx_mstate->__pyx_kp_b_iso88591_A_t81G1, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
   }
   {
     const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 33};
@@ -8401,7 +8251,7 @@ static PyObject* __Pyx_ImportFrom(PyObject* module, PyObject* name) {
         if (unlikely(!module_name_str)) { goto modbad; }
         module_name = PyUnicode_FromString(module_name_str);
         if (unlikely(!module_name)) { goto modbad; }
-        module_dot = PyUnicode_Concat(module_name, __pyx_mstate_global->__pyx_kp_u__2);
+        module_dot = PyUnicode_Concat(module_name, __pyx_mstate_global->__pyx_kp_u_);
         if (unlikely(!module_dot)) { goto modbad; }
         full_name = PyUnicode_Concat(module_dot, name);
         if (unlikely(!full_name)) { goto modbad; }
@@ -11489,7 +11339,7 @@ __Pyx_PyType_GetFullyQualifiedName(PyTypeObject* tp)
         result = name;
         name = NULL;
     } else {
-        result = __Pyx_NewRef(__pyx_mstate_global->__pyx_kp_u__3);
+        result = __Pyx_NewRef(__pyx_mstate_global->__pyx_kp_u__2);
     }
     goto done;
 }

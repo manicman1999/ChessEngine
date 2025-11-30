@@ -4,6 +4,7 @@ from typing import Optional
 from cychess import Board, alg_to_square
 
 # Assuming your engines are in these paths; adjust if needed
+from src.engines.playerEngine.playerEngine import PlayerEngine
 from src.engines.pstEngine.pstEngine import PstEngine
 from src.engines.random.randomEngine import RandomEngine
 from src.engines.chessEngineBase import ChessEngineBase
@@ -36,7 +37,7 @@ async def run_game(
     white_engine: ChessEngineBase,
     black_engine: ChessEngineBase,
     max_fullmoves: int = 200,
-    rand_moves: int = 2,
+    rand_moves: int = 0,
 ) -> dict[str, str]:
     board = Board()
     board.set_start_position()
@@ -78,8 +79,9 @@ async def run_game(
             break
 
         moves_history.append(move_str)
-        mat_bal = board.material_balance()
-        print(f"{color} ({engine.name}): {move_str} ({len(moves_history) // 2 - 1}) (Mat Balance: {mat_bal})")
+        if engine.name != "PlayerEngine":
+            mat_bal = board.eval_pst()
+            print(f"{color} ({engine.name}): {move_str} ({len(moves_history) // 2 - 1}) (PST Eval: {mat_bal})")
 
     if result is None:
         result_str = "1/2-1/2"

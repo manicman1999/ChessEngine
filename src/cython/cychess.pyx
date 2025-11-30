@@ -231,10 +231,16 @@ cdef class Board:
     # For remembering if moves is currently legal moves
     cdef bint legal_valid
 
+    # Eval func
+    cdef object eval_func
+
     def __cinit__(self):
         self._clear()
         self.undo_index = 0
         self.legal_valid = False
+
+    cpdef void set_eval_func(self, object eval_func):
+        self.eval_func = eval_func
 
     cdef void _clear(self) nogil:
         cdef int i
@@ -1140,8 +1146,40 @@ cdef class Board:
                 self._undo_move()
         return nodes
 
+    cdef bint _is_repetition(self) nogil:
+        if self.undo_index < 12:
+            return False
+        cdef int start_index = self.undo_index - 12
+        cdef uint8_t[4][2] move_pattern = [
+            [self.undo_stack[start_index+0].fr_sq, self.undo_stack[start_index+0].to_sq],
+            [self.undo_stack[start_index+1].fr_sq, self.undo_stack[start_index+1].to_sq],
+            [self.undo_stack[start_index+2].fr_sq, self.undo_stack[start_index+2].to_sq],
+            [self.undo_stack[start_index+3].fr_sq, self.undo_stack[start_index+3].to_sq],
+        ]
+
+        cdef int j, pattern_index
+        for j in range(start_index+4, self.undo_index):
+            pattern_index = (j - start_index) % 4
+            if move_pattern[pattern_index][0] != self.undo_stack[j].fr_sq and move_pattern[pattern_index][1] != self.undo_stack[j].to_sq:
+                return False
+        return True
+
     cpdef object game_result(self):
         self.generate_legal_moves()
+
+        # Check for repetition
+        if self._is_repetition():
+            return 0
+
+        # Check for sufficient material
+        cdef uint64_t occ = self.occupancy[2]
+        cdef int total_pieces = 0
+        while occ:
+            total_pieces += 1
+            occ &= occ - 1
+        if total_pieces == 2:
+            return 0
+        
         if self.move_count > 0:
             return None
         if self._is_in_check():
@@ -1243,3 +1281,40 @@ cdef class Board:
         # Print file labels (bottom)
         print("  a b c d e f g h")
         print(f"Turn: {'White' if self.white_to_move else 'Black'} | Castling: {self.castling} | EP: {self.ep_square if self.ep_square >= 0 else 'none'} | Halfmove: {self.halfmove} | Fullmove: {self.fullmove}")
+
+    cdef double _search(self, int depth):
+        cdef uint64_t key
+        cdef double eval_score
+        if depth == 0:
+            return <double>self.eval_func(self)
+        
+        self.generate_legal_moves()
+        cdef object game_result = self.game_result()
+        if game_result is not None:
+            return 100000.0 * game_result
+
+        cdef double max_score = -99999.0
+        cdef Move move
+        cdef double score
+
+        cdef int j
+        for j in range(self.move_count):
+            self.move_cache[depth][j] = self.moves[j]
+        self.move_count_cache[depth] = self.move_count
+        
+        for j in range(self.move_count_cache[depth]):
+            move = self.move_cache[depth][j]
+            if self._make_move(move.fr_sq, move.to_sq, move.promo):
+                score = self._search(depth - 1)
+                self._undo_move()
+            else:
+                score = 100000.0
+            
+            score = -score
+            if score > max_score:
+                max_score = score
+        
+        return max_score
+
+    cpdef double search(self, int depth):
+        return self._search(depth)

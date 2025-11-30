@@ -14,7 +14,7 @@ class PstEngine(ChessEngineBase):
     depth: int
     seacher: NegamaxSearch
 
-    def __init__(self, depth: int = 4):
+    def __init__(self, depth: int = 3):
         self.depth = depth
         self.searcher = NegamaxSearch(lambda b: b.material_balance())
 
@@ -25,11 +25,16 @@ class PstEngine(ChessEngineBase):
         start_time = time.time()
 
         start_pst = board.eval_pst()
+        
+        if board.white_move():
+            board.set_eval_func(lambda b: b.eval_pst())
+        else:
+            board.set_eval_func(lambda b: -b.eval_pst())
 
         results = []
         for move in legal_moves:
             if board.make_move(*move):
-                results.append(self.searcher.search(board, self.depth - 1))
+                results.append(board.search(self.depth))
                 board.pop()
             else:
                 results.append(8000)
@@ -37,12 +42,8 @@ class PstEngine(ChessEngineBase):
         best_move = None
         best_score = -inf
         best_move_str = ""
-        total_evals = 0
         for move, score in zip(legal_moves, results):
-            total_evals += 0
-
-            score *= -1
-
+            score = -score
             if score > best_score:
                 best_score = score
                 best_move = move
@@ -52,7 +53,7 @@ class PstEngine(ChessEngineBase):
                 pass
 
         total_time = time.time() - start_time
-        print(f"{total_evals} evals in {total_time:.4f}s.")
+        print(f"{total_time:.4f}s")
 
         if best_move and best_move_str:
             return best_move_str

@@ -26,14 +26,14 @@ cdef class NegamaxSearch:
         self.eval_func = eval_func
         # No explicit init needed for unordered_map; defaults to empty
     
-    cpdef double search(self, object board, int depth, double alpha=-100000.0, double beta=100000.0):
-        return self._search(board, depth, alpha, beta)
+    cpdef double search(self, object board, int depth):
+        return self._search(board, depth)
     
     # Optional: For Python introspection (e.g., print cache size)
     cpdef size_t get_cache_size(self):
         return self.eval_cache.size()
     
-    cdef double _search(self, object board, int depth, double alpha, double beta):
+    cdef double _search(self, object board, int depth):
         cdef uint64_t key
         cdef double eval_score
         if depth == 0:
@@ -54,19 +54,13 @@ cdef class NegamaxSearch:
         
         for move in moves:
             if board.make_move(move[0], move[1], move[2]):
-                score = self._search(board, depth - 1, -beta, -alpha)
+                score = self._search(board, depth - 1)
                 board.undo_move()
             else:
-                score = 0.0
+                score = 100000.0
             
             score = -score
             if score > max_score:
                 max_score = score
-            
-            if score > alpha:
-                alpha = score
-            
-            if alpha >= beta:
-                break
         
         return max_score
