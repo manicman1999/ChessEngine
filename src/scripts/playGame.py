@@ -120,9 +120,9 @@ async def run_game(
 
 
 async def main():
-    white = PstEngine()
+    white = PlayerEngine()
     black = PstEngine()
-    result = await run_game(white, black, 50)
+    result = await run_game(white, black, 100)
 
     print()
     print(result['pgn'])
