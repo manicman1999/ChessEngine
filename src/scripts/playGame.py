@@ -4,6 +4,7 @@ from typing import Optional
 from cychess import Board, alg_to_square
 
 # Assuming your engines are in these paths; adjust if needed
+from src.engines.attn.attnEngine import AttnEngine
 from src.engines.playerEngine.playerEngine import PlayerEngine
 from src.engines.pstEngine.pstEngine import PstEngine
 from src.engines.random.randomEngine import RandomEngine
@@ -121,7 +122,7 @@ async def run_game(
 
 async def main():
     white = PstEngine()
-    black = PstEngine()
+    black = AttnEngine()
     result = await run_game(white, black, 100)
 
     print()
