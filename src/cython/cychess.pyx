@@ -85,6 +85,17 @@ cdef inline int flip_sq(int sq) nogil:
     """Mirror square vertically for black PST lookup: a1<->a8, etc."""
     return ((sq & 7) | ((7 - (sq >> 3)) << 3))
 
+cdef extern from * nogil:
+    """
+    #include <stdint.h>  // Ensures uint64_t
+    int __builtin_ctzll(uint64_t x);
+    """
+    int __builtin_ctzll(uint64_t) nogil
+
+cdef inline int lsb_sq(uint64_t bb) nogil:
+    if bb == 0: return -1
+    return __builtin_ctzll(bb)
+
 # PeSTO midgame PST tables (positional deltas, sq 0=a1 to 63=h8)
 cdef int16_t MG_PAWN[64]
 MG_PAWN[:] = [
@@ -1282,7 +1293,7 @@ cdef class Board:
         print("  a b c d e f g h")
         print(f"Turn: {'White' if self.white_to_move else 'Black'} | Castling: {self.castling} | EP: {self.ep_square if self.ep_square >= 0 else 'none'} | Halfmove: {self.halfmove} | Fullmove: {self.fullmove}")
 
-    cdef double _search(self, int depth):
+    cdef double _search(self, int depth, double alpha, double beta):
         cdef uint64_t key
         cdef double eval_score
         if depth == 0:
@@ -1293,7 +1304,6 @@ cdef class Board:
         if game_result is not None:
             return 100000.0 * game_result
 
-        cdef double max_score = -99999.0
         cdef Move move
         cdef double score
 
@@ -1305,16 +1315,16 @@ cdef class Board:
         for j in range(self.move_count_cache[depth]):
             move = self.move_cache[depth][j]
             if self._make_move(move.fr_sq, move.to_sq, move.promo):
-                score = self._search(depth - 1)
+                score = self._search(depth - 1, -100000.0, 100000.0)
                 self._undo_move()
-            else:
-                score = 100000.0
             
-            score = -score
-            if score > max_score:
-                max_score = score
+                score = -score
+                if score > alpha:
+                    alpha = score
+                if alpha > beta:
+                    break
         
-        return max_score
+        return alpha
 
     cpdef double search(self, int depth):
-        return self._search(depth)
+        return self._search(depth, -100000.0, 100000.0)

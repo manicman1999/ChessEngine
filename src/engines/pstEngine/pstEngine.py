@@ -14,7 +14,7 @@ class PstEngine(ChessEngineBase):
     depth: int
     seacher: NegamaxSearch
 
-    def __init__(self, depth: int = 4):
+    def __init__(self, depth: int = 3):
         self.depth = depth
         self.searcher = NegamaxSearch(lambda b: b.material_balance())
 
