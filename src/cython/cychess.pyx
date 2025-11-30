@@ -85,6 +85,39 @@ cdef inline int flip_sq(int sq) nogil:
     """Mirror square vertically for black PST lookup: a1<->a8, etc."""
     return ((sq & 7) | ((7 - (sq >> 3)) << 3))
 
+cdef inline int lsb_sq(uint64_t bb) nogil:
+    """Portable LSB (ctzll): position of lowest set bit (-1 if bb==0)."""
+    if bb == 0:
+        return -1
+    cdef int r = 0
+    if (bb & 0xFFFFFFFFULL) == 0:
+        bb >>= 32
+        r += 32
+    if (bb & 0xFFFFULL) == 0:
+        bb >>= 16
+        r += 16
+    if (bb & 0xFFULL) == 0:
+        bb >>= 8
+        r += 8
+    if (bb & 0xFULL) == 0:
+        bb >>= 4
+        r += 4
+    if (bb & 0x3ULL) == 0:
+        bb >>= 2
+        r += 2
+    if (bb & 0x1ULL) == 0:
+        bb >>= 1
+        r += 1
+    return r
+
+cdef inline int popcnt(uint64_t bb) nogil:
+    """Portable popcountll (bit count)."""
+    cdef int r = 0
+    while bb:
+        bb &= bb - 1
+        r += 1
+    return r
+
 # PeSTO midgame PST tables (positional deltas, sq 0=a1 to 63=h8)
 cdef int16_t MG_PAWN[64]
 MG_PAWN[:] = [
@@ -330,11 +363,7 @@ cdef class Board:
 
     cdef inline int find_king_sq(self, bint is_white) nogil:
         cdef uint64_t kings_bb = self.pieces[PIECE_WK - 1 if is_white else PIECE_BK - 1]
-        cdef int sq
-        for sq in range(64):
-            if sq_to_bit(sq) & kings_bb:
-                return sq
-        return -1  # Error state
+        return lsb_sq(kings_bb)
 
     cdef inline void add_move(self, int fr, int to, uint8_t promo = 0) nogil:
         if self.move_count >= 256:
@@ -349,9 +378,9 @@ cdef class Board:
         cdef uint64_t target_bb
         cdef int dx, dy
 
-        for sq in range(64):
-            if (sq_to_bit(sq) & knights_bb) == 0:
-                continue
+        while knights_bb:
+            sq = lsb_sq(knights_bb)
+            knights_bb &= knights_bb - 1
             for delta in range(8):
                 if self.move_count >= 256:
                     return self.move_count
@@ -375,9 +404,9 @@ cdef class Board:
         cdef int p
         cdef int sq_file, tgt_file
 
-        for sq in range(64):
-            if (sq_to_bit(sq) & pawns_bb) == 0:
-                continue
+        while pawns_bb:
+            sq = lsb_sq(pawns_bb)
+            pawns_bb &= pawns_bb - 1
             start_rank = (side == 0 and (sq // 8) == 1) or (side == 1 and (sq // 8) == 6)
 
             # Single push
@@ -447,10 +476,7 @@ cdef class Board:
         cdef int tgt_file
 
         # Find king (single)
-        for sq in range(64):
-            if sq_to_bit(sq) & kings_bb:
-                king_sq = sq
-                break
+        king_sq = lsb_sq(kings_bb)
 
         assert king_sq != -1
 
@@ -510,9 +536,9 @@ cdef class Board:
         cdef int dfile, drank
         cdef bint vertical, horizontal
 
-        for sq in range(64):
-            if (sq_to_bit(sq) & rooks_bb) == 0:
-                continue
+        while rooks_bb:
+            sq = lsb_sq(rooks_bb)
+            rooks_bb &= rooks_bb - 1
             for dir_idx in range(4):
                 if self.move_count >= 256:
                     return self.move_count
@@ -550,9 +576,9 @@ cdef class Board:
         cdef int dfile, drank
         cdef bint vertical, horizontal
 
-        for sq in range(64):
-            if (sq_to_bit(sq) & bishops_bb) == 0:
-                continue
+        while bishops_bb:
+            sq = lsb_sq(bishops_bb)
+            bishops_bb &= bishops_bb - 1
             for dir_idx in range(4):
                 if self.move_count >= 256:
                     return self.move_count
@@ -590,9 +616,9 @@ cdef class Board:
         cdef int dfile, drank
         cdef bint vertical, horizontal
 
-        for sq in range(64):
-            if (sq_to_bit(sq) & queens_bb) == 0:
-                continue
+        while queens_bb:
+            sq = lsb_sq(queens_bb)
+            queens_bb &= queens_bb - 1
             for dir_idx in range(8):
                 if self.move_count >= 256:
                     return self.move_count
@@ -1080,23 +1106,24 @@ cdef class Board:
     cdef int _eval_pst(self) nogil:
         cdef int score = 0
         cdef int sq, ptype, flip
-        cdef uint64_t bit
+        cdef uint64_t bb
 
-        # White pieces: material + PST
+        # White: mat + PST
         for ptype in range(6):
-            for sq in range(64):
-                bit = sq_to_bit(sq)
-                if self.pieces[ptype] & bit:
-                    score += MATERIAL_MG[ptype] + MG_TABLES[ptype][sq]
+            bb = self.pieces[ptype]
+            while bb:
+                sq = lsb_sq(bb)
+                score += MATERIAL_MG[ptype] + MG_TABLES[ptype][sq]
+                bb &= bb - 1
 
-        # Black pieces: -(material + PST[flip(sq)])
+        # Black: -(mat + PST flip)
         for ptype in range(6):
-            for sq in range(64):
-                bit = sq_to_bit(sq)
-                if self.pieces[ptype + 6] & bit:
-                    flip = flip_sq(sq)
-                    score -= MATERIAL_MG[ptype] + MG_TABLES[ptype][flip]
-
+            bb = self.pieces[ptype + 6]
+            while bb:
+                sq = lsb_sq(bb)
+                flip = flip_sq(sq)
+                score -= MATERIAL_MG[ptype] + MG_TABLES[ptype][flip]
+                bb &= bb - 1
         return score
 
     cpdef int eval_pst(self):
@@ -1104,26 +1131,11 @@ cdef class Board:
         return self._eval_pst()
 
     cdef int _material_balance(self) nogil:
-        """White material - black material (pawn=1 units; positive = white adv)."""
-        cdef int white_mat = 0
-        cdef int black_mat = 0
-        cdef int ptype, sq
-        cdef uint64_t bit
-
-        # White
+        cdef int white_mat = 0, black_mat = 0
+        cdef int ptype
         for ptype in range(6):
-            for sq in range(64):
-                bit = sq_to_bit(sq)
-                if self.pieces[ptype] & bit:
-                    white_mat += PIECE_VALUES[ptype]
-
-        # Black
-        for ptype in range(6):
-            for sq in range(64):
-                bit = sq_to_bit(sq)
-                if self.pieces[ptype + 6] & bit:
-                    black_mat += PIECE_VALUES[ptype]
-
+            white_mat += popcnt(self.pieces[ptype]) * PIECE_VALUES[ptype]
+            black_mat += popcnt(self.pieces[ptype + 6]) * PIECE_VALUES[ptype]
         return white_mat - black_mat
 
     cpdef int material_balance(self):
@@ -1207,29 +1219,23 @@ cdef class Board:
 
     # Inside Board class (add these)
     cdef uint64_t _zobrist_hash(self) nogil:
-        """Full Zobrist hash (pieces + side + castle + EP)."""
         cdef uint64_t h = 0
         cdef int sq, pt
-        cdef uint64_t bit
+        cdef uint64_t bb
 
-        # All pieces (double-loop; upgrade to LSB later)
+        # Pieces: LSB per bitboard
         for pt in range(12):
-            for sq in range(64):
-                bit = sq_to_bit(sq)
-                if self.pieces[pt] & bit:
-                    h ^= ZOBRIST_PIECE[sq][pt]
+            bb = self.pieces[pt]
+            while bb:
+                sq = lsb_sq(bb)
+                h ^= ZOBRIST_PIECE[sq][pt]
+                bb &= bb - 1
 
-        # Side to move
-        if not self.white_to_move:
-            h ^= ZOBRIST_SIDE
-
-        # Castling rights (0-15 → index)
+        # Rest unchanged
+        if not self.white_to_move: h ^= ZOBRIST_SIDE
         h ^= ZOBRIST_CASTLE[self.castling]
-
-        # EP square (-1=none →64)
         cdef int ep_idx = 64 if self.ep_square < 0 else self.ep_square
         h ^= ZOBRIST_EP[ep_idx]
-
         return h
 
     cpdef uint64_t zobrist_hash(self):
