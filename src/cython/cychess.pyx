@@ -85,17 +85,6 @@ cdef inline int flip_sq(int sq) nogil:
     """Mirror square vertically for black PST lookup: a1<->a8, etc."""
     return ((sq & 7) | ((7 - (sq >> 3)) << 3))
 
-cdef extern from * nogil:
-    """
-    #include <stdint.h>  // Ensures uint64_t
-    int __builtin_ctzll(uint64_t x);
-    """
-    int __builtin_ctzll(uint64_t) nogil
-
-cdef inline int lsb_sq(uint64_t bb) nogil:
-    if bb == 0: return -1
-    return __builtin_ctzll(bb)
-
 # PeSTO midgame PST tables (positional deltas, sq 0=a1 to 63=h8)
 cdef int16_t MG_PAWN[64]
 MG_PAWN[:] = [
