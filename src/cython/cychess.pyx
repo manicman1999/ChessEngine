@@ -12,6 +12,8 @@
 from libc.stdint cimport uint64_t, uint8_t, uint16_t, int8_t, int16_t
 from libc.math cimport INFINITY
 import random
+import numpy as np
+cimport numpy as cnp
 
 # Piece constants (C-level)
 cdef public uint8_t PIECE_NONE = 0
@@ -1323,3 +1325,41 @@ cdef class Board:
 
     cpdef double search(self, int depth):
         return self._search(depth, -100000.0, 100000.0)
+
+    cpdef cnp.ndarray[cnp.int32_t, ndim=1] tokenize(self):
+        """
+        Returns a NumPy array of 64 int32 tokens, one per square (0-63).
+        Each token = square * 15 + piece_code, where piece_code is:
+        - 0: empty
+        - 1-5: white pawn/knight/bishop/rook/queen
+        - 6: white king with castling rights (any WK/WQ available)
+        - 7: white king without castling rights
+        - 8-12: black pawn/knight/bishop/rook/queen
+        - 13: black king with castling rights (any BK/BQ available)
+        - 14: black king without castling rights
+        Tokens range from 0 (empty a1) to 959 (black king no-castle h8).
+        """
+        cdef cnp.ndarray[cnp.int32_t, ndim=1] tokens = np.zeros(64, dtype=np.int32)
+        cdef int sq
+        cdef uint8_t ptype
+        cdef uint8_t piece_code
+        cdef bint white_can_castle = (self.castling & (CASTLE_WK | CASTLE_WQ)) != 0
+        cdef bint black_can_castle = (self.castling & (CASTLE_BK | CASTLE_BQ)) != 0
+
+        for sq in range(64):
+            ptype = self._get_piece_at(sq)
+            if ptype == PIECE_NONE:
+                piece_code = 0
+            elif ptype <= 6:  # White (1-6)
+                if ptype < 6:
+                    piece_code = ptype  # 1-5 non-kings
+                else:  # King
+                    piece_code = 6 if white_can_castle else 7
+            else:  # Black (7-12)
+                if ptype < 12:
+                    piece_code = (ptype - 7) + 8  # 8-12 non-kings
+                else:  # King
+                    piece_code = 13 if black_can_castle else 14
+            tokens[sq] = <cnp.int32_t>(sq * 15 + piece_code)
+
+        return tokens

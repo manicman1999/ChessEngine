@@ -1,12 +1,14 @@
 import asyncio
 import time
 from typing import Optional
-import chess
 import torch
 from src.engines.attn.modelWorker import ModelWorker
 from src.engines.attn.attnModel import AttnModel, board_to_tokens
 from src.engines.chessEngineBase import ChessEngineBase
 from math import inf
+
+from cychess import Board
+from attn_model import AttnModelCompiled
 
 
 class AttnEngine(ChessEngineBase):
@@ -17,6 +19,8 @@ class AttnEngine(ChessEngineBase):
         self.model = AttnModel()
         if model_path:
             self.model.load_state_dict(torch.load(model_path))
+            
+        
 
         self.modelWorker = ModelWorker(self.model)
         self.model.eval()
