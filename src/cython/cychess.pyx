@@ -1147,9 +1147,9 @@ cdef class Board:
         return nodes
 
     cdef bint _is_repetition(self) nogil:
-        if self.undo_index < 12:
+        if self.undo_index < 9:
             return False
-        cdef int start_index = self.undo_index - 12
+        cdef int start_index = self.undo_index - 9
         cdef uint8_t[4][2] move_pattern = [
             [self.undo_stack[start_index+0].fr_sq, self.undo_stack[start_index+0].to_sq],
             [self.undo_stack[start_index+1].fr_sq, self.undo_stack[start_index+1].to_sq],
@@ -1304,7 +1304,7 @@ cdef class Board:
         for j in range(self.move_count_cache[depth]):
             move = self.move_cache[depth][j]
             if self._make_move(move.fr_sq, move.to_sq, move.promo):
-                score = self._search(depth - 1, -100000.0, 100000.0)
+                score = self._search(depth - 1, -beta, -alpha)
                 self._undo_move()
             
                 score = -score
