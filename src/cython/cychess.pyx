@@ -284,14 +284,19 @@ cdef class Board:
     cdef object eval_func
 
     cdef int eval_count
+    cdef int pst_sign
 
     def __cinit__(self):
         self._clear()
         self.undo_index = 0
         self.legal_valid = False
+        self.pst_sign = 1
 
     cpdef void set_eval_func(self, object eval_func):
         self.eval_func = eval_func
+
+    cpdef void set_pst_sign(self, int pst_sign):
+        self.pst_sign = pst_sign
 
     cdef void _clear(self) noexcept nogil:
         cdef int i
@@ -1195,7 +1200,7 @@ cdef class Board:
                 flip = flip_sq(sq)
                 score -= MATERIAL_MG[ptype] + MG_TABLES[ptype][flip]
                 bb &= bb - 1
-        return score
+        return score * self.pst_sign
 
     cpdef int eval_pst(self):
         """Naive PST + material evaluation (centipawns, positive = white advantage)."""
@@ -1291,6 +1296,7 @@ cdef class Board:
         new_board.fullmove = self.fullmove
         new_board.undo_index = 0
         new_board.move_count = 0
+        new_board.pst_sign = self.pst_sign
         # Caches reset in __cinit__
         return new_board
 
@@ -1366,16 +1372,15 @@ cdef class Board:
         print(f"Turn: {'White' if self.white_to_move else 'Black'} | Castling: {self.castling} | EP: {self.ep_square if self.ep_square >= 0 else 'none'} | Halfmove: {self.halfmove} | Fullmove: {self.fullmove}")
 
     cdef double _eval(self) noexcept nogil:
-        with gil:
-            return <double>self.eval_func(self)
+        return <double>self._eval_pst()
 
-    cdef double _search(self, int depth, double alpha, double beta, double min_bound, double max_bound) noexcept nogil:
+    cdef double _search(self, int depth, double alpha, double beta) noexcept nogil:
         cdef uint64_t key
-        cdef double eval_score = self._eval()
-        self.eval_count += 1
+        cdef double eval_score
 
-        # Don't bother searching catastrophic branches
-        if not (min_bound <= eval_score <= max_bound) or depth == 0:
+        if depth == 0:
+            eval_score = self._eval()
+            self.eval_count += 1
             return eval_score
 
         cdef int game_result = self.game_result_nogil()
@@ -1395,7 +1400,7 @@ cdef class Board:
         for j in range(self.move_count_cache[depth]):
             move = self.move_cache[depth][j]
             if self._make_move(move.fr_sq, move.to_sq, move.promo):
-                score = self._search(depth - 1, -beta, -alpha, min_bound, max_bound)
+                score = self._search(depth - 1, -beta, -alpha)
                 self._undo_move()
             
                 score = -score
@@ -1406,9 +1411,9 @@ cdef class Board:
         
         return alpha
 
-    cpdef double search(self, int depth, double min_bound, double max_bound):
+    cpdef double search(self, int depth):
         self.eval_count = 0
-        return self._search(depth, -100000.0, 100000.0, min_bound, max_bound)
+        return self._search(depth, -100000.0, 100000.0)
 
     cpdef int get_eval_count(self):
         return self.eval_count

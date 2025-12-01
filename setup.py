@@ -6,8 +6,8 @@ import numpy as np
 setup(
     ext_modules=cythonize([
         "src/cython/negamax.pyx",
-        "src/cython/cychess.pyx",
         "src/cython/attn_model.pyx",
+        "src/cython/cychess.pyx",
     ]),
     include_dirs=[np.get_include()],
     extra_compile_args=[
