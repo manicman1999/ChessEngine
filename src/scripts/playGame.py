@@ -1,4 +1,5 @@
 import asyncio
+import time
 from typing import Optional
 
 from cychess import Board, alg_to_square
@@ -34,7 +35,7 @@ def parse_move_alg(move_str: str) -> tuple[int, int, int]:
     return fr_sq, to_sq, promo
 
 
-async def run_game(
+def run_game(
     white_engine: ChessEngineBase,
     black_engine: ChessEngineBase,
     max_fullmoves: int = 200,
@@ -122,8 +123,10 @@ async def run_game(
 
 async def main():
     white = PstEngine()
-    black = AttnEngine()
-    result = await run_game(white, black, 100)
+    black = PstEngine()
+    start_time = time.time()
+    result = run_game(white, black, 100)
+    total_time = time.time() - start_time
 
     print()
     print(result['pgn'])
@@ -131,6 +134,7 @@ async def main():
     print(
         f"\nSummary: {result['winner']} ({result['result']}) after {result['fullmoves']} full moves"
     )
+    print(f"Total time: {total_time:.3f}s")
 
 
 if __name__ == "__main__":

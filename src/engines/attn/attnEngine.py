@@ -38,7 +38,7 @@ class AttnEngine(ChessEngineBase):
         results = []
         total_evals = 0
         for move in legal_moves:
-            if board.make_move(*move):
+            if board.make_move(move[0], move[1], move[2]):
                 results.append(board.search(self.depth))
                 board.pop()
                 total_evals += board.get_eval_count()

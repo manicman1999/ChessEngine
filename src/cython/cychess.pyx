@@ -14,6 +14,7 @@ from libc.math cimport INFINITY
 import random
 import numpy as np
 cimport numpy as cnp
+from libc.stdlib cimport qsort
 
 # Piece constants (C-level)
 cdef public uint8_t PIECE_NONE = 0
@@ -83,11 +84,11 @@ cpdef void init_zobrist():
 init_zobrist()  # Auto-init on module load
 
 # Flip Squares
-cdef inline int flip_sq(int sq) nogil:
+cdef inline int flip_sq(int sq) noexcept nogil:
     """Mirror square vertically for black PST lookup: a1<->a8, etc."""
     return ((sq & 7) | ((7 - (sq >> 3)) << 3))
 
-cdef inline int lsb_sq(uint64_t bb) nogil:
+cdef inline int lsb_sq(uint64_t bb) noexcept nogil:
     """Portable LSB (ctzll): position of lowest set bit (-1 if bb==0)."""
     if bb == 0:
         return -1
@@ -112,7 +113,7 @@ cdef inline int lsb_sq(uint64_t bb) nogil:
         r += 1
     return r
 
-cdef inline int popcnt(uint64_t bb) nogil:
+cdef inline int popcnt(uint64_t bb) noexcept nogil:
     """Portable popcountll (bit count)."""
     cdef int r = 0
     while bb:
@@ -200,7 +201,7 @@ cdef int16_t MATERIAL_MG[6]
 MATERIAL_MG[:] = [82, 337, 365, 477, 1025, 0]
 
 # Free inline functions (pure C, GIL-free)
-cdef inline uint64_t sq_to_bit(int sq) nogil:
+cdef inline uint64_t sq_to_bit(int sq) noexcept nogil:
     return 1ULL << sq
 
 cpdef uint64_t py_sq_to_bit(int sq): return sq_to_bit(sq)
@@ -223,13 +224,26 @@ cpdef int alg_to_square(str alg):
         return rank * 8 + file
     return -1
 
-cdef inline bint is_promo_rank(int sq, uint8_t side) nogil:
+cdef inline bint is_promo_rank(int sq, uint8_t side) noexcept nogil:
     return (side == 0 and (sq // 8) == 7) or (side == 1 and (sq // 8) == 0)
+
+ctypedef int (*CmpFunc)(const void *, const void *) noexcept nogil
 
 cdef struct Move:
     uint8_t fr_sq
     uint8_t to_sq
     uint8_t promo
+    int score
+
+cdef int move_score_cmp(const void* a, const void* b) noexcept nogil:
+    cdef Move* ma = <Move*>a
+    cdef Move* mb = <Move*>b
+    if ma.score > mb.score:
+        return -1
+    elif ma.score < mb.score:
+        return 1
+    else:
+        return 0
 
 cdef struct UndoState:
     uint8_t fr_sq
@@ -279,7 +293,7 @@ cdef class Board:
     cpdef void set_eval_func(self, object eval_func):
         self.eval_func = eval_func
 
-    cdef void _clear(self) nogil:
+    cdef void _clear(self) noexcept nogil:
         cdef int i
         for i in range(12):
             self.pieces[i] = 0ULL
@@ -293,7 +307,7 @@ cdef class Board:
     cpdef void clear(self):
         self._clear()
 
-    cdef void _update_occupancy(self) nogil:
+    cdef void _update_occupancy(self) noexcept nogil:
         cdef uint64_t white = 0ULL
         cdef uint64_t black = 0ULL
         cdef int i
@@ -304,7 +318,7 @@ cdef class Board:
         self.occupancy[1] = black
         self.occupancy[2] = white | black
 
-    cdef void _set_start_position(self) nogil:
+    cdef void _set_start_position(self) noexcept nogil:
         cdef int i
         for i in range(12):
             self.pieces[i] = 0ULL
@@ -343,7 +357,7 @@ cdef class Board:
     cpdef uint64_t get_occupancy(self):
         return self.occupancy[2]
 
-    cdef uint8_t _get_piece_at(self, int sq) nogil:
+    cdef uint8_t _get_piece_at(self, int sq) noexcept nogil:
         """Internal: Get piece type at sq (0=none, 1-12 as defined)."""
         if sq < 0 or sq >= 64:
             return 255  # Invalid marker
@@ -365,19 +379,71 @@ cdef class Board:
             raise ValueError(f"Invalid algebraic square: {alg}")
         return self.get_piece_at(sq)
 
-    cdef inline int find_king_sq(self, bint is_white) nogil:
+    cdef inline int find_king_sq(self, bint is_white) noexcept nogil:
         cdef uint64_t kings_bb = self.pieces[PIECE_WK - 1 if is_white else PIECE_BK - 1]
         return lsb_sq(kings_bb)
 
-    cdef inline void add_move(self, int fr, int to, uint8_t promo = 0) nogil:
+    cdef inline void add_move(self, int fr, int to, uint8_t promo = 0) noexcept nogil:
         if self.move_count >= 256:
             return
         self.moves[self.move_count].fr_sq = <uint8_t>fr
         self.moves[self.move_count].to_sq = <uint8_t>to
         self.moves[self.move_count].promo = promo
+        self.moves[self.move_count].score = self._move_score(self.moves[self.move_count])
         self.move_count += 1
 
-    cdef int _generate_knight_moves(self, uint64_t knights_bb, uint64_t own_occ, uint64_t opp_occ) nogil:
+    cdef inline int _move_score(self, Move move) noexcept nogil:
+        cdef int fr_sq = move.fr_sq
+        cdef int to_sq = move.to_sq
+        cdef uint8_t promo = move.promo
+        cdef uint8_t attacker_type = self._get_piece_at(fr_sq)
+        cdef uint8_t victim_type = self._get_piece_at(to_sq)
+        cdef bint is_white = self.white_to_move
+        cdef bint victim_opponent = False
+        cdef int attacker_value = 0
+        cdef int victim_value = 0
+        cdef int score = 0
+        cdef int file
+
+        if promo != 0:
+            return 10000 + (9 * 100)
+
+        if attacker_type == PIECE_NONE:
+            return 0
+
+        attacker_idx = (attacker_type - 1) % 6
+        attacker_value = PIECE_VALUES[attacker_idx]
+
+        if victim_type != PIECE_NONE:
+            victim_opponent = (victim_type <= 6) != (attacker_type <= 6)
+            if victim_opponent:
+                victim_idx = (victim_type - 1) % 6
+                victim_value = PIECE_VALUES[victim_idx]
+                score = victim_value * 100 - attacker_value * 10
+                if victim_value > attacker_value:
+                    score += 50
+            else:
+                score = 0
+        else:
+            score = attacker_value * 10
+            file = to_sq % 8
+            if 3 <= file <= 4:
+                score += 5
+
+        return score
+
+    cdef void _sort_moves(self) noexcept nogil:
+        """In-place sort of self.moves[0:move_count] by descending score.
+        Computes scores first if not already set."""
+        cdef int i
+        for i in range(self.move_count):
+            self.moves[i].score = self._move_score(self.moves[i])  # Compute into struct
+        
+        # qsort the array in-place (descending via cmp)
+        if self.move_count > 1:
+            qsort(&self.moves[0], <size_t>self.move_count, sizeof(Move), <CmpFunc>move_score_cmp)
+
+    cdef int _generate_knight_moves(self, uint64_t knights_bb, uint64_t own_occ, uint64_t opp_occ) noexcept nogil:
         cdef int sq, target, delta
         cdef uint64_t target_bb
         cdef int dx, dy
@@ -398,7 +464,7 @@ cdef class Board:
                             self.add_move(sq, target)
         return self.move_count
 
-    cdef int _generate_pawn_moves(self, uint64_t pawns_bb, uint64_t own_occ, uint64_t opp_occ, uint8_t side) nogil:
+    cdef int _generate_pawn_moves(self, uint64_t pawns_bb, uint64_t own_occ, uint64_t opp_occ, uint8_t side) noexcept nogil:
         cdef int sq, target, double_target
         cdef uint64_t target_bb
         cdef int push_delta = PAWN_PUSH[side]
@@ -467,7 +533,7 @@ cdef class Board:
 
         return self.move_count
 
-    cdef int _generate_king_moves(self, uint64_t kings_bb, uint64_t own_occ, uint64_t opp_occ) nogil:
+    cdef int _generate_king_moves(self, uint64_t kings_bb, uint64_t own_occ, uint64_t opp_occ) noexcept nogil:
         cdef int sq, target
         cdef uint64_t target_bb
         cdef bint is_white = self.white_to_move
@@ -533,7 +599,7 @@ cdef class Board:
 
         return self.move_count
 
-    cdef int _generate_rook_moves(self, uint64_t rooks_bb, uint64_t own_occ, uint64_t opp_occ) nogil:
+    cdef int _generate_rook_moves(self, uint64_t rooks_bb, uint64_t own_occ, uint64_t opp_occ) noexcept nogil:
         cdef uint64_t blockers = own_occ | opp_occ
         cdef int sq, dir_idx, target, dir_delta
         cdef uint64_t target_bb
@@ -573,7 +639,7 @@ cdef class Board:
                     target += dir_delta
         return self.move_count
 
-    cdef int _generate_bishop_moves(self, uint64_t bishops_bb, uint64_t own_occ, uint64_t opp_occ) nogil:
+    cdef int _generate_bishop_moves(self, uint64_t bishops_bb, uint64_t own_occ, uint64_t opp_occ) noexcept nogil:
         cdef uint64_t blockers = own_occ | opp_occ
         cdef int sq, dir_idx, target, dir_delta
         cdef uint64_t target_bb
@@ -613,7 +679,7 @@ cdef class Board:
                     target += dir_delta
         return self.move_count
 
-    cdef int _generate_queen_moves(self, uint64_t queens_bb, uint64_t own_occ, uint64_t opp_occ) nogil:
+    cdef int _generate_queen_moves(self, uint64_t queens_bb, uint64_t own_occ, uint64_t opp_occ) noexcept nogil:
         cdef uint64_t blockers = own_occ | opp_occ
         cdef int sq, dir_idx, target, dir_delta
         cdef uint64_t target_bb
@@ -653,7 +719,7 @@ cdef class Board:
                     target += dir_delta
         return self.move_count
 
-    cdef bint square_attacked(self, int sq, bint attacker_white) nogil:
+    cdef bint square_attacked(self, int sq, bint attacker_white) noexcept nogil:
         cdef uint64_t attackers = self.occupancy[0 if attacker_white else 1]
         cdef uint64_t all_occ = self.occupancy[2]
         cdef uint64_t attackers_bb, probe_bb
@@ -751,7 +817,7 @@ cdef class Board:
 
         return False
 
-    cdef bint _is_in_check(self, bint check_invalid = False) nogil:
+    cdef bint _is_in_check(self, bint check_invalid = False) noexcept nogil:
         cdef bint defender_white = self.white_to_move ^ check_invalid
         cdef int ksq = self.find_king_sq(defender_white)
         cdef bint attacker_white = not defender_white
@@ -760,7 +826,7 @@ cdef class Board:
     cpdef bint is_in_check(self):
         return self._is_in_check()
 
-    cdef int generate_pseudo_legal_moves(self) nogil:
+    cdef int generate_pseudo_legal_moves(self) noexcept nogil:
         self.legal_valid = False
         self.move_count = 0
         cdef bint is_white = self.white_to_move
@@ -794,7 +860,7 @@ cdef class Board:
 
         return self.move_count
 
-    cdef int generate_legal_moves(self, bint force = False) nogil:
+    cdef int generate_legal_moves(self, bint force = False) noexcept nogil:
         if self.legal_valid and not force:
             return self.move_count
         cdef int pseudo_count = self.generate_pseudo_legal_moves()
@@ -810,6 +876,7 @@ cdef class Board:
                     legal_count += 1
                 self._undo_move()
         self.move_count = legal_count
+        self._sort_moves()
         self.legal_valid = True
         return legal_count
 
@@ -830,13 +897,13 @@ cdef class Board:
         cdef list result = []
         cdef int i
         for i in range(self.move_count):
-            result.append((self.moves[i].fr_sq, self.moves[i].to_sq, self.moves[i].promo))
+            result.append((self.moves[i].fr_sq, self.moves[i].to_sq, self.moves[i].promo, self.moves[i].score))
         return result
 
     cpdef list get_moves_list(self):
         return self._get_moves_list()
 
-    cdef void _set_piece(self, int sq, uint8_t piece_type) nogil:
+    cdef void _set_piece(self, int sq, uint8_t piece_type) noexcept nogil:
         self.legal_valid = False
         if sq < 0 or sq >= 64:
             return
@@ -860,7 +927,7 @@ cdef class Board:
     cpdef set_piece(self, int sq, uint8_t piece_type):
         return self._set_piece(sq, piece_type)
 
-    cdef bint _make_move(self, uint8_t fr_sq_, uint8_t to_sq_, uint8_t promo_) nogil:
+    cdef bint _make_move(self, uint8_t fr_sq_, uint8_t to_sq_, uint8_t promo_) noexcept nogil:
         self.legal_valid = False
         cdef int fr_sq = fr_sq_, to_sq = to_sq_, promo = promo_
         if fr_sq < 0 or fr_sq >= 64 or to_sq < 0 or to_sq >= 64:
@@ -1014,7 +1081,7 @@ cdef class Board:
     cpdef bint push(self, Move move):
         return self.make_move(move.fr_sq, move.to_sq, move.promo)
 
-    cdef void _undo_move(self) nogil:
+    cdef void _undo_move(self) noexcept nogil:
         if self.undo_index <= 0:
             return
         self.legal_valid = False
@@ -1107,7 +1174,7 @@ cdef class Board:
     cpdef void pop(self):
         self.undo_move()
 
-    cdef int _eval_pst(self) nogil:
+    cdef int _eval_pst(self) noexcept nogil:
         cdef int score = 0
         cdef int sq, ptype, flip
         cdef uint64_t bb
@@ -1134,7 +1201,7 @@ cdef class Board:
         """Naive PST + material evaluation (centipawns, positive = white advantage)."""
         return self._eval_pst()
 
-    cdef int _material_balance(self) nogil:
+    cdef int _material_balance(self) noexcept nogil:
         cdef int white_mat = 0, black_mat = 0
         cdef int ptype
         for ptype in range(6):
@@ -1162,7 +1229,7 @@ cdef class Board:
                 self._undo_move()
         return nodes
 
-    cdef bint _is_repetition(self) nogil:
+    cdef bint _is_repetition(self) noexcept nogil:
         if self.undo_index < 9:
             return False
         cdef int start_index = self.undo_index - 9
@@ -1180,10 +1247,10 @@ cdef class Board:
                 return False
         return True
 
-    cpdef object game_result(self):
+    cdef int game_result_nogil(self) noexcept nogil:
+        # -2 = unfinished
         self.generate_legal_moves()
 
-        # Check for repetition
         if self._is_repetition():
             return 0
 
@@ -1197,11 +1264,17 @@ cdef class Board:
             return 0
         
         if self.move_count > 0:
-            return None
+            return -2
         if self._is_in_check():
             return -1 if self.white_to_move else 1
         else:
             return 0
+
+    cpdef object game_result(self):
+        cdef int result = self.game_result_nogil()
+        if result == -2:
+            return None
+        return result
 
     cpdef Board clone(self):
         cdef Board new_board = Board.__new__(Board)
@@ -1222,7 +1295,7 @@ cdef class Board:
         return new_board
 
     # Inside Board class (add these)
-    cdef uint64_t _zobrist_hash(self) nogil:
+    cdef uint64_t _zobrist_hash(self) noexcept nogil:
         cdef uint64_t h = 0
         cdef int sq, pt
         cdef uint64_t bb
@@ -1292,17 +1365,24 @@ cdef class Board:
         print("  a b c d e f g h")
         print(f"Turn: {'White' if self.white_to_move else 'Black'} | Castling: {self.castling} | EP: {self.ep_square if self.ep_square >= 0 else 'none'} | Halfmove: {self.halfmove} | Fullmove: {self.fullmove}")
 
-    cdef double _search(self, int depth, double alpha, double beta):
-        cdef uint64_t key
-        cdef double eval_score
-        if depth == 0:
-            self.eval_count += 1
+    cdef double _eval(self) noexcept nogil:
+        with gil:
             return <double>self.eval_func(self)
+
+    cdef double _search(self, int depth, double alpha, double beta, double min_bound, double max_bound) noexcept nogil:
+        cdef uint64_t key
+        cdef double eval_score = self._eval()
+        self.eval_count += 1
+
+        # Don't bother searching catastrophic branches
+        if not (min_bound <= eval_score <= max_bound) or depth == 0:
+            return eval_score
+
+        cdef int game_result = self.game_result_nogil()
+        if game_result != -2:
+            return 100000.0 * game_result
         
         self.generate_legal_moves()
-        cdef object game_result = self.game_result()
-        if game_result is not None:
-            return 100000.0 * game_result
 
         cdef Move move
         cdef double score
@@ -1315,7 +1395,7 @@ cdef class Board:
         for j in range(self.move_count_cache[depth]):
             move = self.move_cache[depth][j]
             if self._make_move(move.fr_sq, move.to_sq, move.promo):
-                score = self._search(depth - 1, -beta, -alpha)
+                score = self._search(depth - 1, -beta, -alpha, min_bound, max_bound)
                 self._undo_move()
             
                 score = -score
@@ -1326,9 +1406,9 @@ cdef class Board:
         
         return alpha
 
-    cpdef double search(self, int depth):
+    cpdef double search(self, int depth, double min_bound, double max_bound):
         self.eval_count = 0
-        return self._search(depth, -100000.0, 100000.0)
+        return self._search(depth, -100000.0, 100000.0, min_bound, max_bound)
 
     cpdef int get_eval_count(self):
         return self.eval_count
