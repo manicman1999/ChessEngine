@@ -99,93 +99,100 @@ cdef class AttnModelCompiled:
         self.out_b_flat[0] = out_b_view[0]
 
     cpdef float forward(self, tokens):
+        # GIL-held here (Python-called); validate/convert to memoryview
+        if not isinstance(tokens, np.ndarray) or tokens.dtype != np.int32:
+            raise ValueError("tokens must be int32 ndarray")
+        if tokens.shape[0] != 64:
+            raise ValueError(f"tokens shape must be (64,), got {tokens.shape}")
+        cdef cnp.ndarray[cnp.int32_t, ndim=1] tok_arr = tokens
+        cdef int[::1] tok_view = tok_arr  # Contiguous memoryview
+        return self._forward(tok_view)
+
+    cdef float _forward(self, int[::1] tokens) noexcept nogil:
         """
         Optimized forward: nogil, unrolled loops, fixed C arrays for ~5-10x speedup over base.
-        tokens: [64] int32 (token IDs 0-959); accepts np.ndarray or compatible
+        tokens: contiguous int[::1] memoryview (64 elements, token IDs 0-959)
         Returns: float logit (scalar)
         """
-        cdef cnp.ndarray[cnp.int32_t, ndim=1] tok_view = tokens
         cdef int i, j, m, n, tid
         cdef float sum_qk, max_attn, exp_sum, temp, exp_temp
         
-        # Copy tokens to C array (GIL needed for ndarray access)
+        # Copy tokens from memoryview to C array (nogil-safe)
         for i in range(64):
-            self.tokens_c[i] = tok_view[i]
+            self.tokens_c[i] = tokens[i]
+
+        for i in range(64):
+            tid = self.tokens_c[i]
+            # q: 0:4 (unrolled)
+            self.q_flat[i*4 + 0] = self.embed_flat[tid*24 + 0]
+            self.q_flat[i*4 + 1] = self.embed_flat[tid*24 + 1]
+            self.q_flat[i*4 + 2] = self.embed_flat[tid*24 + 2]
+            self.q_flat[i*4 + 3] = self.embed_flat[tid*24 + 3]
+            # k: 4:8 (unrolled)
+            self.k_flat[i*4 + 0] = self.embed_flat[tid*24 + 4]
+            self.k_flat[i*4 + 1] = self.embed_flat[tid*24 + 5]
+            self.k_flat[i*4 + 2] = self.embed_flat[tid*24 + 6]
+            self.k_flat[i*4 + 3] = self.embed_flat[tid*24 + 7]
+            # v: 8:16 (loop for 8; unroll if desired, but compiler may auto)
+            for j in range(8):
+                self.v_flat[i*8 + j] = self.embed_flat[tid*24 + 8 + j]
+            # e: 16:24 (loop)
+            for j in range(8):
+                self.e_flat[i*8 + j] = self.embed_flat[tid*24 + 16 + j]
         
-        with nogil:  # Now fully C: no Python objects, all fixed arrays
-            # Embed: manual slicing to q/k/v/e (flat indexing: embed_flat[tid*24 + offset])
-            for i in range(64):
-                tid = self.tokens_c[i]
-                # q: 0:4 (unrolled)
-                self.q_flat[i*4 + 0] = self.embed_flat[tid*24 + 0]
-                self.q_flat[i*4 + 1] = self.embed_flat[tid*24 + 1]
-                self.q_flat[i*4 + 2] = self.embed_flat[tid*24 + 2]
-                self.q_flat[i*4 + 3] = self.embed_flat[tid*24 + 3]
-                # k: 4:8 (unrolled)
-                self.k_flat[i*4 + 0] = self.embed_flat[tid*24 + 4]
-                self.k_flat[i*4 + 1] = self.embed_flat[tid*24 + 5]
-                self.k_flat[i*4 + 2] = self.embed_flat[tid*24 + 6]
-                self.k_flat[i*4 + 3] = self.embed_flat[tid*24 + 7]
-                # v: 8:16 (loop for 8; unroll if desired, but compiler may auto)
-                for j in range(8):
-                    self.v_flat[i*8 + j] = self.embed_flat[tid*24 + 8 + j]
-                # e: 16:24 (loop)
-                for j in range(8):
-                    self.e_flat[i*8 + j] = self.embed_flat[tid*24 + 16 + j]
-            
-            # attn = q @ k.T / 2.0 (unroll inner dim=4 dot product)
-            for i in range(64):
-                for j in range(64):
-                    sum_qk = (self.q_flat[i*4 + 0] * self.k_flat[j*4 + 0] +
-                              self.q_flat[i*4 + 1] * self.k_flat[j*4 + 1] +
-                              self.q_flat[i*4 + 2] * self.k_flat[j*4 + 2] +
-                              self.q_flat[i*4 + 3] * self.k_flat[j*4 + 3])
-                    self.attn_flat[i*64 + j] = sum_qk * 0.5  # Inline /2.0 as float literal
-            
-            # Softmax (per row; log-sum-exp for stability)
-            for i in range(64):
-                max_attn = self.attn_flat[i*64 + 0]
-                for j in range(1, 64):
-                    if self.attn_flat[i*64 + j] > max_attn:
-                        max_attn = self.attn_flat[i*64 + j]
-                exp_sum = 0.0
-                for j in range(64):
-                    exp_temp = self.attn_flat[i*64 + j] - max_attn
-                    exp_temp = expf(exp_temp)
-                    self.attn_flat[i*64 + j] = exp_temp
-                    exp_sum += exp_temp
-                if exp_sum > 0.0:
-                    for j in range(64):
-                        self.attn_flat[i*64 + j] /= exp_sum
-                else:
-                    for j in range(64):
-                        self.attn_flat[i*64 + j] = 0.0
-            
-            # z = attn @ v [64,8] (loop; 64x64x8 ops)
-            for i in range(64):
-                for n in range(8):
-                    temp = 0.0
-                    for j in range(64):
-                        temp += self.attn_flat[i*64 + j] * self.v_flat[j*8 + n]
-                    self.z_flat[i*8 + n] = temp
-            
-            # combined = cat(z, e) [64,16] (loop over 8)
-            for i in range(64):
-                for j in range(8):
-                    self.combined_flat[i*16 + j] = self.z_flat[i*8 + j]
-                    self.combined_flat[i*16 + 8 + j] = self.e_flat[i*8 + j]
-            
-            # h = ReLU(head(combined_flat) + bias) [16] (1024x16 ops)
-            for n in range(16):  # Use 'n' to avoid shadowing
-                temp = self.head_b_flat[n]
-                for m in range(1024):
-                    temp += self.combined_flat[m] * self.head_w_flat[m * 16 + n]
-                self.h_flat[n] = fmaxf(0.0, temp)
-            
-            # value = out(h) + bias (loop over 16)
-            temp = self.out_b_flat[0]
-            for n in range(16):
-                temp += self.h_flat[n] * self.out_w_flat[n]
-            self.value = temp
+        # attn = q @ k.T / 2.0 (unroll inner dim=4 dot product)
+        for i in range(64):
+            for j in range(64):
+                sum_qk = (self.q_flat[i*4 + 0] * self.k_flat[j*4 + 0] +
+                            self.q_flat[i*4 + 1] * self.k_flat[j*4 + 1] +
+                            self.q_flat[i*4 + 2] * self.k_flat[j*4 + 2] +
+                            self.q_flat[i*4 + 3] * self.k_flat[j*4 + 3])
+                self.attn_flat[i*64 + j] = sum_qk * 0.5  # Use float literal for precision
         
+        # Softmax (per row; log-sum-exp for stability)
+        for i in range(64):
+            max_attn = self.attn_flat[i*64 + 0]
+            for j in range(1, 64):
+                if self.attn_flat[i*64 + j] > max_attn:
+                    max_attn = self.attn_flat[i*64 + j]
+            exp_sum = 0.0
+            for j in range(64):
+                exp_temp = self.attn_flat[i*64 + j] - max_attn
+                exp_temp = expf(exp_temp)
+                self.attn_flat[i*64 + j] = exp_temp
+                exp_sum += exp_temp
+            if exp_sum > 0.0:
+                for j in range(64):
+                    self.attn_flat[i*64 + j] /= exp_sum
+            else:
+                # Fallback to uniform (better than all-zero; avoids NaN propagation)
+                for j in range(64):
+                    self.attn_flat[i*64 + j] = 1.0 / 64.0
+        
+        # z = attn @ v [64,8] (loop; 64x64x8 ops)
+        for i in range(64):
+            for n in range(8):
+                temp = 0.0
+                for j in range(64):
+                    temp += self.attn_flat[i*64 + j] * self.v_flat[j*8 + n]
+                self.z_flat[i*8 + n] = temp
+        
+        # combined = cat(z, e) [64,16] (loop over 8)
+        for i in range(64):
+            for j in range(8):
+                self.combined_flat[i*16 + j] = self.z_flat[i*8 + j]
+                self.combined_flat[i*16 + 8 + j] = self.e_flat[i*8 + j]
+        
+        # h = ReLU(head(combined_flat) + bias) [16] (1024x16 ops)
+        for n in range(16):  # Use 'n' to avoid shadowing
+            temp = self.head_b_flat[n]
+            for m in range(1024):
+                temp += self.combined_flat[m] * self.head_w_flat[m * 16 + n]
+            self.h_flat[n] = fmaxf(0.0, temp)
+        
+        # value = out(h) + bias (loop over 16)
+        temp = self.out_b_flat[0]
+        for n in range(16):
+            temp += self.h_flat[n] * self.out_w_flat[n]
+        self.value = temp
         return self.value

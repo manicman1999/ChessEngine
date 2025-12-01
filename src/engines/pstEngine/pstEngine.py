@@ -20,16 +20,16 @@ class PstEngine(ChessEngineBase):
 
     def choose_move(self, board: Board) -> Optional[str]:
         legal_moves = board.get_moves_list()
-        legal_move_strs = [f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]}" for move in legal_moves]
+        legal_move_strs = [f"{square_to_alg(move[0])}{square_to_alg(move[1])}{promo_chars[move[2]]} ({move[3]})" for move in legal_moves]
 
         start_time = time.time()
 
         start_pst = board.eval_pst()
         
         if board.white_move():
-            board.set_eval_func(lambda b: b.eval_pst())
+            board.set_eval_func(lambda b: 1)
         else:
-            board.set_eval_func(lambda b: -b.eval_pst())
+            board.set_eval_func(lambda b: -1)
 
         results = []
         total_evals = 0
